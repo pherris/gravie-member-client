@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="css/style.css" rel="stylesheet" type="text/css">
+  </head>
+  <body>
+
+    <a class="sr-only" href="#content">Skip Navigation</a>
+
+    <div id="top" ng-controller="HeaderController">
+      <div id="app-override">
+        FFM Mocking Enabled
+      </div>
+
+      <div class="container">
+        <nav>
+          <a href="/" id="headerlogo" class="header-logo pull-left"><img src="/assets/logo-white-bafe82af413ad67ccb7aef7f44644e90.png" alt="Gravie"/></a>
+          <ul class="top-menu pull-right">
+            <li class="nav-right dropdown">
+              <a id="drop2" role="button" class="btn-link dropdown-toggle" data-toggle="dropdown" data-disabled="true">
+                <span class="glyphicon glyphicon-user" aria-hidden="true"></span>
+                <span class="hidden-xs">Wayne Horton</span>
+                <span class="caret"></span>
+              </a>
+              <ul class="dropdown-menu pull-right" role="menu" aria-labelledby="drop2">
+                <li role="presentation"><a href="/user/editCredentials?previousPage=%2Finterview%2FmedicalCoverageNeeds" id="editLoginLink">Edit Login</a></li>
+                <li role="presentation"><a href="/member/editProfile?previousPage=%2Finterview%2FmedicalCoverageNeeds" id="editProfileLink">Edit Profile</a></li>
+                <li role="presentation"><a href="" id="releaseOfInformationLink" ng-click="showReleaseOfInfoModal()">Release of Information</a></li>
+                <li role="presentation"><a href="/logout/index" id="logout">Log Out</a></li>
+              </ul>
+            </li>
+          </ul>
+          <div class="header-help pull-right">
+            <button name="helpMe" type="button" class="btn needHelp dropdown-toggle" data-toggle="dropdown" data-disabled="true">
+              <span class="gravicon gravicon-help ng-scope"></span> <span class="hidden-xs">Need Help?</span>
+            </button>
+            <ul class="dropdown-menu text-center">
+              <li role="presentation" class="dropdown-header">HOURS OF OPERATION</li>
+              <li name="hoursOfOperation" role="presentation">
+                <p>Mon: 8am - 8pm CT<br />Tue: 8am - 8pm CT<br />Wed: 8am - 6pm CT<br />Thu: 8am - 6pm CT<br />Fri: 8am - 4pm CT</p>
+              </li>
+              <li role="presentation"><a class="btn btn-primary mb1" href="tel:+18005012920"><span class="glyphicon glyphicon-earphone" aria-hidden="true"></span> 800.501.2920</a></li>
+              <li role="presentation"><a class="btn btn-primary mb1 tt-l" href="mailto:help@gravie.com"><span class="glyphicon glyphicon-envelope" aria-hidden="true"></span> help@gravie.com</a></li>
+              <li role="presentation"><a href="" gr-glossary>Glossary</a></li>
+              <li role="presentation"><a href="#" id="shareMyScreen">Share My Screen</a></li>
+            </ul>
+          </div>
+        </nav>
+      </div>
+    </div>
+
+    <div class="progression hidden-xs">
+      <ol>
+        <li>
+          <span class="glyphicon glyphicon-ok green" style="margin-right: 3px;"></span>
+          <a href="/interview/pathfinder">How can we help</a>
+        </li>
+
+        <li class="current">
+          <span>Find a plan</span>
+        </li>
+
+        <li>
+          <span>Payment</span>
+        </li>
+
+        <li>
+          <span>Submit</span>
+        </li>
+
+      </ol>
+    </div>
+
+    <div id="container" class="container">
+      <div id="body" class="row">
+        <div id="content" class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 col-sm-12 gr-panel">
+          <div id="contacts"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="questions" class="text-center">
+      <h2>Questions?</h2>
+      <a href="tel:+1800.501.2920">800.501.2920</a> or <a class="btn-link" gr-mail-to="help@gravie.com">help@gravie.com</a>
+    </div>
+    <div id="footer" class="text-center">
+      <div class="container">
+        <p class="sr-only">Free PDF reader available from <a href="http://get.adobe.com/reader/">Adobe</a>.</p>
+
+        <div class="footer-legal">© 2013-2016 Gravie, Inc. All rights reserved.</div>
+
+        <ul class="footer-menu mt1 p0">
+          <li><a href="/site/privacyPolicy" target="bobloblaw">Privacy Policy</a></li>
+          <li><a href="/site/termsAndConditions" target="bobloblaw">Terms of Service</a></li>
+          <li><a href="/site/termsOfUse" target="bobloblaw">Terms of Use</a></li>
+          <li><a href="/site/licensing" target="bobloblaw">Licensing</a></li>
+          <li><a class="btn-link" gr-glossary="">Glossary</a></li>
+        </ul>
+      </div>
+    </div>
+    <script src="js/compiled/gravie_member_client.js" type="text/javascript"></script>
+  </body>
+</html>
