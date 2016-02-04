@@ -7,20 +7,19 @@
 
 (def app-state
   (atom
-    {:people
-     [{:type :student :first "Ben" :last "Bitdiddle" :email "benb@mit.edu"}
-      {:type :student :first "Alyssa" :middle-initial "P" :last "Hacker"
-       :email "aphacker@mit.edu"}
-      {:type :professor :first "Gerald" :middle "Jay" :last "Sussman"
-       :email "metacirc@mit.edu" :classes [:6001 :6946]}
-      {:type :student :first "Eva" :middle "Lu" :last "Ator" :email "eval@mit.edu"}
-      {:type :student :first "Louis" :last "Reasoner" :email "prolog@mit.edu"}
-      {:type :professor :first "Hal" :last "Abelson" :email "evalapply@mit.edu"
-       :classes [:6001]}]
-     :classes
-     {:6001 "The Structure and Interpretation of Computer Programs"
-      :6946 "The Structure and Interpretation of Classical Mechanics"
-      :1806 "Linear Algebra"}}))
+    {:coverage-details {
+                         :available-dates ["Select..." "3/1/2016" "4/1/2014" "5/1/2014"]
+                         :zip-code "55104"
+                         :counties ["Ramsey" "Hennepin"]
+                         }
+     :participants [{
+                      :member true
+                      :first-name "Henry"
+                      :last-name "Wingbanger"
+                      :birth-date "8/13/1955"
+                      :gender nil
+                      :tobacco nil
+                      }]}))
 
 (defn glossary-term [data owner]
   (reify
@@ -63,32 +62,33 @@
         (dom/div {:className "form-group"}
           (dom/label {:className "control-label col-sm-4" :for "zipCode"}
             (dom/span "ZIP Code")
-            (om/build-all form-field-required-icon [""]))
+            (om/build form-field-required-icon ""))
           (dom/div {:className "col-sm-8" }
-            (om/build-all input-text [{
-                                        :id "zipCode"
-                                        :value "55104"
-                                        }])))
+            (om/build input-text {
+                                   :id "zipCode"
+                                   :value (:zip-code (:coverage-details data))})))
         (dom/div {:className "form-group"}
             (dom/label {:className "control-label col-sm-4"}
               (dom/span "County"))
             (dom/div {:className "col-sm-8"}
-              (om/build-all select-box [{:options ["Hennepin" "Ramsey"]}])))))))
+              (om/build select-box {:options ["Hennepin" "Ramsey"]})))
+        (dom/hr)))))
 
 (defn coverage-details [data owner]
   (reify
     om/IRender
     (render [_]
       (dom/div {:className "form-container"}
-        (dom/div {:className "form-group"}
-          (dom/label {:className "control-label col-sm-4"}
-            (om/build-all glossary-term ["Requested Start Date"])
-            (om/build-all form-field-required-icon [""])) ;;can I pass no arg to a component?
-          (dom/div {:className "col-sm-8"}
-            (om/build-all select-box [{
-                                        :name "planCoverageDate"
-                                        :options ["Select..." "3/1/2016" "4/1/2014"]}])))
-        (om/build-all zip-and-county [""])))))
+        (dom/div {:className "form-horizontal"}
+          (dom/div {:className "form-group"}
+            (dom/label {:className "control-label col-sm-4"}
+              (om/build glossary-term ["Requested Start Date"])
+              (om/build form-field-required-icon [""])) ;;can I pass no arg to a component?
+            (dom/div {:className "col-sm-8"}
+              (om/build select-box {
+                                     :name "planCoverageDate"
+                                     :options (:available-dates (:coverage-details data))})))
+          (om/build zip-and-county data))))))
 
 (om/root coverage-details app-state
          {:target (. js/document (getElementById "coverageDetails"))})
