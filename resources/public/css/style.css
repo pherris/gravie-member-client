@@ -7,3 +7,9 @@ ul li input {
 ul li button {
     margin-left: 10px;
 }
+.error {
+  display: none;
+}
+.has-error .error {
+  display: block;
+}
