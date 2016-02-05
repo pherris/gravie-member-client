@@ -8,7 +8,9 @@
 (def app-state
   (atom
     {:coverage-details {
-                         :available-dates ["Select..." "3/1/2016" "4/1/2014" "5/1/2014"]
+                         :plan-coverage-date {
+                                               :available-dates ["Select..." "3/1/2016" "4/1/2014" "5/1/2014"]
+                                               :errors ["some error"]}
                          :zip-code "55104"
                          :counties ["Ramsey" "Hennepin"]
                          }
@@ -53,6 +55,9 @@
                    :id (:id data)
                    :value (:value data)}))))
 
+(defn get-error [field app-state]
+  (get-in app-state [field :errors]))
+
 (defn zip-and-county [data owner]
   (reify
     om/IRender
@@ -78,16 +83,20 @@
   (reify
     om/IRender
     (render [_]
+            (println (get-error :plan-coverage-date (:coverage-details data)))
       (dom/div {:className "form-container"}
         (dom/div {:className "form-horizontal"}
-          (dom/div {:className "form-group"}
+          (dom/div {:className (str
+                             "form-group "
+                             (if (get-error :plan-coverage-date (:coverage-details data)) "has-error" ""))}
             (dom/label {:className "control-label col-sm-4"}
               (om/build glossary-term ["Requested Start Date"])
-              (om/build form-field-required-icon [""])) ;;can I pass no arg to a component?
+              (om/build form-field-required-icon [""])) ;;no-arg component?
             (dom/div {:className "col-sm-8"}
               (om/build select-box {
                                      :name "planCoverageDate"
-                                     :options (:available-dates (:coverage-details data))})))
+                                     :options (get-in data [:coverage-details :plan-coverage-date :available-dates])})
+              (dom/span {:className "error-content"} (get-error :plan-coverage-date (:coverage-details data)))))
           (om/build zip-and-county data))))))
 
 (om/root coverage-details app-state
