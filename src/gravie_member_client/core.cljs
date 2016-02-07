@@ -1,13 +1,22 @@
 (ns ^:figwheel-always gravie-member-client.core
   (:require [om.core :as om :include-macros true]
             [om-tools.dom :as dom :include-macros true]
-            [clojure.string :as string]))
+            [gravie-member-client.async :refer [raise!]]
+            [gravie-member-client.utils :as utils :refer [mlog]]
+            [gravie-member-client.user-events :as user-events]
+            [cljs.core.async :as async :refer [<! chan put!]]
+            [clojure.string :as string])
+  (:require-macros [cljs.core.async.macros :as am :refer [go alt!]]
+            [gravie-member-client.utils :as utils :refer [swallow-errors]]))
 
 (enable-console-print!)
 
 (def app-state
   (atom
-    {:coverage-details {
+    { :comms {:nav (chan)
+                 :api (chan)
+                 :user-event (chan)}
+      :coverage-details {
                          :plan-coverage-date {
                                                :available-dates ["Select..." "3/1/2016" "4/1/2014" "5/1/2014"]
                                                :selected "3/1/2016"
@@ -46,6 +55,56 @@
                        :errors nil }]
                     :errors nil ;;["Please provide only 1 spouse or domestic partner"]
                     }}))
+
+
+;; (defn api-handler
+;;   [value state]
+;;   (println "received api request")
+;;   (swallow-errors
+;;    (let [message (first value)
+;;          status (second value)
+;;          api-data (nth value 2)]
+;;      (api/api-event message status api-data state))))
+
+;; (defn nav-handler
+;;   [navigation-point state history]
+;;   (println "received nav message" navigation-point)
+;;   (swallow-errors
+;;    (let [args nil]
+;;      (if (and (nil? (-> @state :auth :kat-token))
+;;               (not= (:page navigation-point) :home))
+;;        ;;todo: save args and deep redirect after auth
+;;        (do (.setToken history ""))
+;;        (do
+;;          (swap! state #(assoc %
+;;                               :page nil
+;;                               :page-errors nil
+;;                               :page-data nil))
+;;          (swap! state (partial nav/navigated-to-state navigation-point args))
+;;          (nav/navigated-to-action navigation-point args @state))))))
+
+(defn user-action-handler
+  [{:keys [action] :as message} state history]
+  (mlog "User-action-handler called with action" action " message " message)
+  (swallow-errors
+   (let [previous-state @state]
+     (swap! state (partial user-events/user-action-state action message))
+     (user-events/user-action-event! action message previous-state @state history))))
+
+(defn ^:export setup! [state]
+  (let [nav-ch (-> @state :comms :nav)
+        api-ch (-> @state :comms :api)
+        user-event-ch (-> @state :comms :user-event)]
+;;         history (routes/define-routes! state)]
+
+    (go (while true
+          (alt!
+;;             nav-ch ([message] (nav-handler message state history))
+;;             api-ch ([message] (api-handler message state))
+            user-event-ch ([message] (user-action-handler message state nil)))))))
+
+
+
 
 (defn get-error [field app-state]
   (get-in app-state [field :errors]))
@@ -100,7 +159,8 @@
                    :type "text"
                    :className "form-control form-33 angular ng-pristine ng-untouched ng-valid ng-valid-maxlength"
                    :id (:id data)
-                   :value (:value data)}))))
+                   :value (:value data)
+                   :on-change (:on-change data)}))))
 
 (defn coverage-add [app-data owner]
   (reify om/IRender
@@ -169,7 +229,8 @@
             (dom/div {:className "col-sm-8" }
               (om/build input-text {
                                      :id "zipCode"
-                                     :value (:selected (:zip-code coverage-details))})
+                                     :value (:selected (:zip-code coverage-details))
+                                     :on-change #(utils/edit-input owner [:coverage-details :zip-code :selected] %)})
               (dom/span {:className "error-content"} zip-code-error)))
           (dom/div {:className (include-error-class "form-group" county-error)}
               (dom/label {:className "control-label col-sm-4"}
@@ -200,7 +261,8 @@
           (om/build zip-and-county app-state))))))
 
 (om/root coverage-details app-state
-         {:target (. js/document (getElementById "coverageDetails"))})
+         {:target (. js/document (getElementById "coverageDetails"))
+          :shared {:comms (-> @app-state :comms)}})
 
 (om/root coverage-participants app-state
          {:target (. js/document (getElementById "coverageParticipants"))})
