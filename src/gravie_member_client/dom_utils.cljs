@@ -7,7 +7,9 @@
   (get-in app-state [field :errors]))
 
 (defn include-error-class [current-classes error-object]
-  (str current-classes " " (if error-object "has-error" "")))
+  (let [errors (if (list? error-object) error-object (list error-object))]
+    (println errors (list? errors))
+    (str current-classes (if (not-any? nil? errors) " has-error" ""))))
 
 (defn glossary-term [data owner]
   (reify
@@ -49,9 +51,10 @@
   (reify
     om/IRender
     (render [_]
-      (dom/input {
+      (dom/input (merge {
                    :type "text"
-                   :className "form-control form-33 angular ng-pristine ng-untouched ng-valid ng-valid-maxlength"
-                   :id (:id data)
-                   :value (:value data)
-                   :on-change (:on-change data)}))))
+                   :className "form-control form-33 angular ng-pristine ng-untouched ng-valid ng-valid-maxlength"} data))))) ;default classes incorrect
+
+(defn error-div [error-message owner]
+  (reify om/IRender (render [_]
+    (dom/div {:className "error-content ng-hide"} error-message))))

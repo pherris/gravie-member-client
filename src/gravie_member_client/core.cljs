@@ -20,38 +20,56 @@
       :coverage-details {
                          :plan-coverage-date {
                                                :available-dates ["Select..." "3/1/2016" "4/1/2014" "5/1/2014"]
-                                               :selected "3/1/2016"
-                                               :errors ["some error"]}
+                                               :value "3/1/2016"
+                                               :errors `("some error")}
                          :zip-code {
-                                     :selected "55104"
+                                     :value "55104"
                                      :errors nil}
                          :county {
-                                   :selected "Ramsey"
+                                   :value "Ramsey"
                                    :available-counties ["Ramsey" "Hennepin"]
                                    :errors nil}}
      :participants {:people [{
-                       :member true
-                       :first-name "Henry"
-                       :last-name "Wingbanger"
-                       :birth-date "8/13/1955"
-                       :gender nil
-                       :tobacco true
+                       :member {
+                                 :value true }
+                       :first-name {
+                                     :value "Henry"}
+                       :last-name {
+                                    :value "Wingbanger" }
+                       :birth-date {
+                                     :value "8/13/1955" }
+                       :gender {
+                                 :value nil }
+                       :tobacco {
+                                  :value true }
                        :errors nil }
                       {
-                       :member false
-                       :first-name "Mary"
-                       :last-name "Wingbanger"
-                       :birth-date "9/21/1955"
-                       :gender "Female"
-                       :tobacco false
+                       :member {
+                                 :value false }
+                       :first-name {
+                                     :value "Mary"}
+                       :last-name {
+                                    :value "Wingbanger" }
+                       :birth-date {
+                                     :value "9/21/1955" }
+                       :gender {
+                                 :value "Female" }
+                       :tobacco {
+                                  :value false }
                        :errors nil }
                       {
-                       :member false
-                       :first-name "Child"
-                       :last-name "Wingbanger"
-                       :birth-date nil
-                       :gender nil
-                       :tobacco nil
+                       :member {
+                                 :value false }
+                       :first-name {
+                                     :value "Child"}
+                       :last-name {
+                                    :value "Wingbanger" }
+                       :birth-date {
+                                     :value nil }
+                       :gender {
+                                 :value nil }
+                       :tobacco {
+                                  :value nil }
                        :errors nil }]
                     :errors nil ;;["Please provide only 1 spouse or domestic partner"]
                     }}))
