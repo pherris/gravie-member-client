@@ -1,4 +1,4 @@
-(ns gravie-member-client.utils)
+(ns gravie-member-client.util)
 
 (defmacro swallow-errors
   [& body]
