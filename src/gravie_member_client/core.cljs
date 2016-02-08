@@ -2,13 +2,13 @@
   (:require [om.core :as om :include-macros true]
             [om-tools.dom :as dom :include-macros true]
             [gravie-member-client.async :refer [raise!]]
-            [gravie-member-client.utils :as utils :refer [mlog]]
             [gravie-member-client.user-events :as user-events]
-            [gravie-member-client.coverage_details :as coverage-details]
+            [gravie-member-client.coverage-details :as coverage-details]
+            [gravie-member-client.utils :as utils :refer [mlog]]
             [cljs.core.async :as async :refer [<! chan put!]]
             [clojure.string :as string])
   (:require-macros [cljs.core.async.macros :as am :refer [go alt!]]
-            [gravie-member-client.utils :as utils :refer [swallow-errors]]))
+            [gravie-member-client.util :as util :refer [swallow-errors]]))
 
 (enable-console-print!)
 

@@ -1,4 +1,4 @@
-(ns gravie-member-client.coverage_details
+(ns gravie-member-client.coverage-details
   (:require [om.core :as om :include-macros true]
             [om-tools.dom :as dom :include-macros true]
             [gravie-member-client.async :refer [raise!]]
@@ -8,7 +8,7 @@
             [cljs.core.async :as async :refer [<! chan put!]]
             [clojure.string :as string])
   (:require-macros [cljs.core.async.macros :as am :refer [go alt!]]
-            [gravie-member-client.utils :as utils :refer [swallow-errors]]))
+            [gravie-member-client.util :as util :refer [swallow-errors]]))
 
 (defn years-ago [from-date]
   (-> (.moment js/window) (.diff (.moment js/window from-date "MM/DD/YYYY") "years")))
@@ -96,15 +96,19 @@
                 (dom/div {:className (dom-utils/include-error-class "d-i" gender-error)}
                   (dom/label {:className "control-label col-sm-2" :for "gender"} "Gender *")
                   (dom/div {:className "col-sm-4"}
-                    (om/build dom-utils/input-text {
-                                         :name "birthDate"
-                                         :id "birthDate"
-                                         :className "form-control angular ng-pristine ng-untouched ng-valid ng-valid-required ng-valid-maxlength"
-                                         :placeholder "mm/dd/yyyy"
-                                         :maxLength 10
-                                         :required true
-                                         :value (:value birth-date)
-                                         :on-change #(utils/edit-input owner [:coverage-details :participants :people :birth-date :value] %)})
+                    (om/build dom-utils/form-binary {
+                                          :option-one {
+                                                        :className ""
+                                                        :name "gender"
+                                                        :on-change nil
+                                                        :value "MALE"
+                                                        }
+                                          :option-two {
+                                                        :className ""
+                                                        :name "gender"
+                                                        :on-change nil
+                                                        :value "FEMALE"
+                                                        }})
                     (om/build dom-utils/error-div birth-date-error))))))))))
 
 (defn coverage-participant [participant owner]

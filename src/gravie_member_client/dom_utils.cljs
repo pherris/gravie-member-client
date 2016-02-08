@@ -8,7 +8,6 @@
 
 (defn include-error-class [current-classes error-object]
   (let [errors (if (list? error-object) error-object (list error-object))]
-    (println errors (list? errors))
     (str current-classes (if (not-any? nil? errors) " has-error" ""))))
 
 (defn glossary-term [data owner]
@@ -58,3 +57,7 @@
 (defn error-div [error-message owner]
   (reify om/IRender (render [_]
     (dom/div {:className "error-content ng-hide"} error-message))))
+
+(defn form-binary [config owner]
+  (reify om/IRender (render [_]
+    (dom/div "yo"))))
