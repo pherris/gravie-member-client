@@ -18,61 +18,39 @@
                  :api (chan)
                  :user-event (chan)}
       :coverage-details {
-                         :plan-coverage-date {
-                                               :available-dates ["Select..." "3/1/2016" "4/1/2014" "5/1/2014"]
-                                               :value "3/1/2016"
-                                               :errors `("some error")}
-                         :zip-code {
-                                     :value "55104"
-                                     :errors nil}
-                         :county {
-                                   :value "Ramsey"
-                                   :available-counties ["Ramsey" "Hennepin"]
-                                   :errors nil}}
+                         :plan-coverage-date "3/1/2016"
+                         :available-dates ["Select..." "3/1/2016" "4/1/2014" "5/1/2014"]
+                         :zip-code "55104"
+                         :county "Ramsey"
+                         :available-counties ["Ramsey" "Hennepin"]}
      :participants {:people [{
-                       :member {
-                                 :value true }
-                       :first-name {
-                                     :value "Henry"}
-                       :last-name {
-                                    :value "Wingbanger" }
-                       :birth-date {
-                                     :value "8/13/1955" }
-                       :gender {
-                                 :value nil }
-                       :tobacco {
-                                  :value true }
-                       :errors nil }
+                       :member true
+                       :first-name "Henry"
+                       :last-name "Wingbanger"
+                       :birth-date "8/13/1955"
+                       :gender "MALE"
+                       :tobacco true } ;how to associate
                       {
-                       :member {
-                                 :value false }
-                       :first-name {
-                                     :value "Mary"}
-                       :last-name {
-                                    :value "Wingbanger" }
-                       :birth-date {
-                                     :value "9/21/1955" }
-                       :gender {
-                                 :value "Female" }
-                       :tobacco {
-                                  :value false }
-                       :errors nil }
+                       :member false
+                       :first-name "Mary"
+                       :last-name "Wingbanger"
+                       :birth-date "8/21/1954"
+                       :gender "FEMALE"
+                       :tobacco false }
                       {
-                       :member {
-                                 :value false }
-                       :first-name {
-                                     :value "Child"}
-                       :last-name {
-                                    :value "Wingbanger" }
-                       :birth-date {
-                                     :value nil }
-                       :gender {
-                                 :value nil }
-                       :tobacco {
-                                  :value nil }
-                       :errors nil }]
+                       :member false
+                       :first-name "child"
+                       :last-name "Wingbanger"
+                       :birth-date "1/03/1995"
+                       :gender nil
+                       :tobacco false }]
                     :errors nil ;;["Please provide only 1 spouse or domestic partner"]
-                    }}))
+                    }
+      :errors {
+                :coverage-details {
+                                    :plan-coverage-date `("some error!")
+                                    }
+                }}))
 
 
 ;; (defn api-handler

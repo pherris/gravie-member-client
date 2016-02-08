@@ -42,6 +42,7 @@
     (reify
       om/IRender
       (render [_]
+              (println selected options)
         (dom/select {:name "form-container" :className "form-control form-66 angular ng-pristine ng-valid ng-touched"}
           (for [option options]
             (dom/option (when (= selected option) {:selected true}) option)))))))
@@ -54,10 +55,29 @@
                    :type "text"
                    :className "form-control form-33 angular ng-pristine ng-untouched ng-valid ng-valid-maxlength"} data))))) ;default classes incorrect
 
+(defn input-radio [data owner]
+  (reify
+    om/IRender
+    (render [_]
+      (dom/input (merge {
+                   :type "radio"} data)))))
+
 (defn error-div [error-message owner]
   (reify om/IRender (render [_]
     (dom/div {:className "error-content ng-hide"} error-message))))
 
 (defn form-binary [config owner]
-  (reify om/IRender (render [_]
-    (dom/div "yo"))))
+  (let [option-one (:option-one config)
+        option-two (:option-two config)]
+    (reify om/IRender (render [_]
+      (dom/div {:className "form-binary form-control angular"}
+        (dom/label {:className (if (= (:value option-one) (:value config)) "active" "")}
+          (om/build input-radio {
+                                :name "gender"
+                                :value (:value option-one)
+                                :className "ng-pristine ng-untouched ng-valid ng-valid-required" }) (:display option-one))
+        (dom/label {:className (if (= (:value config) (:value option-two)) "active" "")}
+          (om/build input-radio {
+                                :name "gender"
+                                :value (:value option-two)
+                                :className "ng-pristine ng-untouched ng-valid ng-valid-required" }) (:display option-two)))))))
