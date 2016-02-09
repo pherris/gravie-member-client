@@ -12,7 +12,8 @@
                   :exclusions [org.clojure/tools.reader]]
                  [sablono "0.3.6"]
                  [org.omcljs/om "0.9.0"]
-                 [prismatic/om-tools "0.3.12"]]
+                 [prismatic/om-tools "0.3.12"]
+                 [camel-snake-kebab "0.3.2"]]
 
   :plugins [[lein-figwheel "0.5.0-6"]
             [lein-cljsbuild "1.1.2" :exclusions [[org.clojure/clojure]]]]
@@ -22,30 +23,34 @@
   :clean-targets ^{:protect false} ["resources/public/js/compiled" "target"]
 
   :cljsbuild {:builds
-              [{:id "dev"
-                :source-paths ["src"]
+              {:dev
+               {:source-paths ["src"]
+                  ;; If no code is to be run, set :figwheel true for continued automagical reloading
+                  :figwheel {:on-jsload "gravie-member-client.core/on-js-reload"
+                             :websocket-url "wss://member-cljs.local.gravie.us/figwheel-ws"}
 
-                ;; If no code is to be run, set :figwheel true for continued automagical reloading
-                :figwheel {:on-jsload "gravie-member-client.core/on-js-reload"}
+                  :compiler {:main gravie-member-client.core
+                             :asset-path "/js/cljs/out"
+                             :output-to "../gravie-train/gravie-member/web-app/js/cljs/gravie-member-client-debug.js"
+                             :output-dir "../gravie-train/gravie-member/web-app/js/cljs/out"
+                             :source-map-timestamp true}}
 
-                :compiler {:main gravie-member-client.core
-                           :asset-path "js/compiled/out"
-                           :output-to "resources/public/js/compiled/gravie_member_client.js"
-                           :output-dir "resources/public/js/compiled/out"
-                           :source-map-timestamp true}}
-               ;; This next build is an compressed minified build for
-               ;; production. You can build this with:
-               ;; lein cljsbuild once min
-               {:id "min"
+                ;; This next build is an compressed minified build for
+                ;; production. You can build this with:
+                ;; lein cljsbuild once min
+
+               :min
+               {:figwheel true
                 :source-paths ["src"]
-                :compiler {:output-to "resources/public/js/compiled/gravie_member_client.js"
+                :compiler {:output-to "resources/public/js/compiled/gravie-member-client.js"
                            :main gravie-member-client.core
                            :optimizations :advanced
-                           :pretty-print false}}]}
+                           :pretty-print false}}}}
 
   :figwheel {;; :http-server-root "public" ;; default and assumes "resources"
-             ;; :server-port 3449 ;; default
-             ;; :server-ip "127.0.0.1"
+             :server-port 3449 ;; default
+             :server-ip "member-cljs.local.gravie.us"
+
              :load-warninged-code true  ;; <- Add this
              :css-dirs ["resources/public/css"] ;; watch and update CSS
 
