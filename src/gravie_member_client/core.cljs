@@ -29,28 +29,31 @@
                        :last-name "Wingbanger"
                        :birth-date "8/13/1955"
                        :gender "MALE"
-                       :tobacco true } ;how to associate
+                       :tobacco true
+                      :relationship-type nil} ;how to associate
                       {
                        :member false
                        :first-name "Mary"
                        :last-name "Wingbanger"
                        :birth-date "8/21/1954"
                        :gender "FEMALE"
-                       :tobacco false }
+                       :tobacco false
+                       :relationship-type "SPOUSE"}
                       {
                        :member false
                        :first-name "child"
                        :last-name "Wingbanger"
                        :birth-date "1/03/1995"
                        :gender nil
-                       :tobacco false }]
+                       :tobacco false
+                       :relationship-type nil}]
                     }
       :errors {
                 :coverage-details {
                                  :plan-coverage-date ["error one" "2" "basd"]
                                     }
                 :participants { :errors ["BLA"] ;can we avoid this generic errors object? I think not, how else to show an error for all participants?
-                                :people [[ ]
+                                :people [{ :first-name ["so sad, your first name has an error"]}
                                          [ ]
                                          { :errors ["the child has an error" "or two"]}]}}}))
 
