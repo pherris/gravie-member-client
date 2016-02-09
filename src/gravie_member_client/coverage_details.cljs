@@ -156,11 +156,14 @@
       (let [participants (:participants app-state)
             participants-errors (dom-utils/get-error2 [:participants :errors] app-state)
             people-errors (get-in app-state [:errors :participants :people])
+            ; note that people and their errors are combined here as well as being associated with the index they hold in the vector
             people-with-errors (map-indexed (fn [index participant]
-                                              (assoc participant :errors (:errors (get people-errors index)))) (:people participants))]
-          (dom/div {:className (dom-utils/include-error-class "" participants-errors)}
-            (dom/label {:className "control-label control-label-lg"} "Tell us who needs coverage")
-            (dom/div {:className "alert alert-danger"} participants-errors)
+                                              (let [pwe (assoc participant :errors (:errors (get people-errors index)))]
+                                                (assoc pwe :index index))) (:people participants))]
+          (dom/div
+            (dom/div {:className (dom-utils/include-error-class "" participants-errors)}
+              (dom/label {:className "control-label control-label-lg"} "Tell us who needs coverage")
+              (dom/div {:className "alert alert-danger"} participants-errors))
             (om/build-all coverage-participant people-with-errors)
             (om/build coverage-add app-state))))))
 

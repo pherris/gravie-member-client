@@ -11,6 +11,7 @@
 
 (defn include-error-class [current-classes error-object]
   "if the collection is not empty and any items in the collection are not nil, return a new string with ' has-error' appended to 'current-classes'"
+  (println error-object)
   (let [errors (if (vector? error-object) error-object [error-object])]
     (str current-classes (if (and (not-any? nil? errors) (not-empty errors)) " has-error" ""))))
 
