@@ -6,12 +6,17 @@
             [gravie-member-client.user-events :as user-events]
             [gravie-member-client.dom-utils :as dom-utils]
             [cljs.core.async :as async :refer [<! chan put!]]
-            [clojure.string :as string])
+            [clojure.string :as string]
+            [cljs-time.core :as t]
+            [cljs-time.coerce :as coerce]
+            [cljs-time.format :as format]
+            [sablono.core :as html :refer-macros [html]])
   (:require-macros [cljs.core.async.macros :as am :refer [go alt!]]
             [gravie-member-client.util :as util :refer [swallow-errors]]))
 
 (defn years-ago [from-date]
-  (-> (.moment js/window) (.diff (.moment js/window from-date "MM/DD/YYYY") "years")))
+  (-> (t/interval (coerce/from-string from-date) (t/now))
+      (t/in-years)))
 
 (defn coverage-add [app-data owner]
   (reify om/IRender
@@ -204,21 +209,37 @@
                   (dom/span {:className "error-content"} county-error)))
             (dom/hr))))))
 
+
+#_[:select.form-control {:value (:disguise-id workbook)
+                         :on-change #(utils/edit-input owner [:current-destination 
+                                                              :current-workbook
+                                                              :disguise-id] %)}
+   [:option {:value ""} ""]
+   (for [disguise disguises]
+     [:option {:value (:id disguise) :key (:id disguise)} (:name disguise)])]
+
 (defn coverage-details [app-state owner]
   (reify
     om/IRender
     (render [_]
-      (let [ plan-coverage-date-path [:coverage-details :plan-coverage-date]
-             plan-coverage-date-error (dom-utils/get-error2 plan-coverage-date-path app-state)]
-        (dom/div {:className "form-horizontal"}
-          (dom/div {:className (dom-utils/include-error-class "form-group" plan-coverage-date-error)}
-            (dom/label {:className "control-label col-sm-4"}
-              (om/build dom-utils/glossary-term ["Requested Start Date"])
-              (om/build dom-utils/form-field-required-icon nil))
-            (dom/div {:className "col-sm-8"}
-              (om/build dom-utils/select-box {
-                                     :name "planCoverageDate"
-                                     :options (get-in app-state [:coverage-details :available-dates])
-                                     :defaultValue (get-in app-state plan-coverage-date-path)})
-              (dom/span {:className "error-content"} plan-coverage-date-error)))
-          (om/build zip-and-county app-state))))))
+      (let [plan-coverage-date-path [:coverage-details :plan-coverage-date]
+            plan-coverage-date-error (dom-utils/get-error2 plan-coverage-date-path app-state)
+            available-plan-coverage-dates (-> app-state :coverage-details :available-plan-coverage-dates)
+            display-date-format (format/formatter "M/d/yyyy")]
+        (html [:div.form-horizontal
+               [:div.form-group 
+                [:label.control-label.col-sm-4
+                 (om/build dom-utils/glossary-term ["Requested Start Date"])
+                 (om/build dom-utils/form-field-required-icon nil)]
+                [:div.col-sm-8
+                 [:select.form-control.form-66 {:value (-> app-state :coverage-details :plan-coverage-date)
+                                                :on-change #(utils/edit-input owner [:coverage-details
+                                                                                     :plan-coverage-date] %)}
+                  [:option {:value ""} ""]
+                  (for [coverage-date available-plan-coverage-dates]
+                    [:option {:value coverage-date :key coverage-date} (->> coverage-date
+                                                                            (coerce/from-string)
+                                                                            (format/unparse display-date-format))])]
+                 
+                 [:span.error-content]]]
+               (om/build zip-and-county app-state)])))))
