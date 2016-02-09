@@ -6,9 +6,13 @@
 (defn get-error [field app-state]
   (get-in app-state [field :errors]))
 
+(defn get-error2 [path state]
+  (vec (get-in state (into [:errors] path))))
+
 (defn include-error-class [current-classes error-object]
-  (let [errors (if (list? error-object) error-object (list error-object))]
-    (str current-classes (if (not-any? nil? errors) " has-error" ""))))
+  "if the collection is not empty and any items in the collection are not nil, return a new string with ' has-error' appended to 'current-classes'"
+  (let [errors (if (vector? error-object) error-object [error-object])]
+    (str current-classes (if (and (not-any? nil? errors) (not-empty errors)) " has-error" ""))))
 
 (defn glossary-term [data owner]
   (reify

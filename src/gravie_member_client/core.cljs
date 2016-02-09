@@ -44,14 +44,15 @@
                        :birth-date "1/03/1995"
                        :gender nil
                        :tobacco false }]
-                    :errors nil ;;["Please provide only 1 spouse or domestic partner"]
                     }
       :errors {
                 :coverage-details {
-                                    :plan-coverage-date `("some error!")
+                                 :plan-coverage-date ["error one" "2" "basd"]
                                     }
-                }}))
-
+                :participants { :errors ["BLA"] ;can we avoid this generic errors object? I think not, how else to show an error for all participants?
+                                :people [[ ]
+                                         [ ]
+                                         { :errors ["the child has an error" "or two"]}]}}}))
 
 ;; (defn api-handler
 ;;   [value state]
