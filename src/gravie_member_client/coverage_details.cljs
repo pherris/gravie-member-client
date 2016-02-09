@@ -141,70 +141,77 @@
                   (dom/a { name="finish" :className "btn btn-primary pull-right" } "Done")))))))))
 
 (defn coverage-participant [participant owner]
-  (let [{:keys [:member :first-name :last-name :birth-date :gender :tobacco :errors]} participant] ;;may not need
-    (reify
-      om/IRender
-        (render [_]
-          (dom/div {:className "panel-list coverage-list"}
-              (dom/div {:className "panel"}
-                (om/build coverage-participant-heading participant)
-                (om/build coverage-participant-form participant)))))))
+  (reify
+    om/IRender
+    (render [_]
+      (dom/div {:className "panel-list coverage-list"}
+        (dom/div {:className "panel"}
+          (om/build coverage-participant-heading participant)
+          (om/build coverage-participant-form participant))))))
 
 (defn coverage-participants [app-state owner]
-  (let [participants (:participants app-state)
-        participants-error (dom-utils/get-error :participants app-state)]
-    (reify
-      om/IRender
-        (render [_]
-          (dom/div {:className (dom-utils/include-error-class "" participants-error)}
+  (reify
+    om/IRender
+    (render [_]
+      (let [participants (:participants app-state)
+            participants-errors (dom-utils/get-error2 [:participants :errors] app-state)
+            people-errors (get-in app-state [:errors :participants :people])
+            people-with-errors (map-indexed (fn [index participant]
+                                              (assoc participant :errors (:errors (get people-errors index)))) (:people participants))]
+          (dom/div {:className (dom-utils/include-error-class "" participants-errors)}
             (dom/label {:className "control-label control-label-lg"} "Tell us who needs coverage")
-            (dom/div {:className "alert alert-danger error-content"} participants-error)
-            (om/build-all coverage-participant (:people participants)) ;;should people have nested value/errors keys?
+            (dom/div {:className "alert alert-danger"} participants-errors)
+            (om/build-all coverage-participant people-with-errors)
             (om/build coverage-add app-state))))))
 
 (defn zip-and-county [app-state owner]
-  (let [zip-code-error (dom-utils/get-error :zip-code (:coverage-details app-state))
-        county-error (dom-utils/get-error :county (:coverage-details app-state))
+  (reify
+    om/IRender
+    (render [_]
+      (let [ zip-code-path [:coverage-details :zip-code]
+        county-path [:coverage-details :county]
+        zip-code-error (dom-utils/get-error2 zip-code-path app-state)
+        county-error (dom-utils/get-error2 county-path app-state)
+        county (get-in app-state county-path)
+        zip-code (get-in app-state zip-code-path)
         coverage-details (:coverage-details app-state)]
-    (reify
-      om/IRender
-      (render [_]
-        (dom/div
-          (dom/hr)
-          (dom/div {:className (dom-utils/include-error-class "form-group" zip-code-error)}
-            (dom/label {:className "control-label col-sm-4" :for "zipCode"}
-              (dom/span "ZIP Code")
-              (om/build dom-utils/form-field-required-icon ""))
-            (dom/div {:className "col-sm-8" }
-              (om/build dom-utils/input-text {
+          (dom/div
+            (dom/hr)
+            (dom/div {:className (dom-utils/include-error-class "form-group" zip-code-error)}
+              (dom/label {:className "control-label col-sm-4" :for "zipCode"}
+                (dom/span "ZIP Code")
+                (om/build dom-utils/form-field-required-icon ""))
+              (dom/div {:className "col-sm-8" }
+                (om/build dom-utils/input-text {
                                      :id "zipCode"
-                                     :value (:zip-code coverage-details)
+                                     :value zip-code
                                      :on-change #(utils/edit-input owner [:coverage-details :zip-code] %)})
-              (dom/span {:className "error-content"} zip-code-error)))
-          (dom/div {:className (dom-utils/include-error-class "form-group" county-error)}
-              (dom/label {:className "control-label col-sm-4"}
-                (dom/span "County"))
-              (dom/div {:className "col-sm-8"}
-                (om/build dom-utils/select-box {
+                (dom/span {:className "error-content"} zip-code-error)))
+            (dom/div {:className (dom-utils/include-error-class "form-group" county-error)}
+                (dom/label {:className "control-label col-sm-4"}
+                  (dom/span "County"))
+                (dom/div {:className "col-sm-8"}
+                  (om/build dom-utils/select-box {
                                        :options (:available-counties coverage-details)
-                                       :value (:county coverage-details)})
-                (dom/span {:className "error-content"} county-error)))
-          (dom/hr))))))
+                                       :value county})
+                  (dom/span {:className "error-content"} county-error)))
+            (dom/hr))))))
 
 (defn coverage-details [app-state owner]
-  (let [plan-coverage-date-error (dom-utils/get-error :plan-coverage-date (:coverage-details app-state))]
-    (reify
-      om/IRender
-      (render [_]
+  (reify
+    om/IRender
+    (render [_]
+      (let [ plan-coverage-date-path [:coverage-details :plan-coverage-date]
+             plan-coverage-date-error (dom-utils/get-error2 plan-coverage-date-path app-state)]
         (dom/div {:className "form-horizontal"}
           (dom/div {:className (dom-utils/include-error-class "form-group" plan-coverage-date-error)}
             (dom/label {:className "control-label col-sm-4"}
               (om/build dom-utils/glossary-term ["Requested Start Date"])
-              (om/build dom-utils/form-field-required-icon [""])) ;;no-arg component?
+              (om/build dom-utils/form-field-required-icon nil))
             (dom/div {:className "col-sm-8"}
               (om/build dom-utils/select-box {
                                      :name "planCoverageDate"
                                      :options (get-in app-state [:coverage-details :available-dates])
-                                     :selected (get-in app-state [:coverage-details :plan-coverage-date])})
+                                     :selected (get-in app-state plan-coverage-date-path)})
               (dom/span {:className "error-content"} plan-coverage-date-error)))
           (om/build zip-and-county app-state))))))
