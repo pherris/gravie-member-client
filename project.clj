@@ -10,7 +10,7 @@
                  [org.clojure/clojurescript "1.7.170"]
                  [org.clojure/core.async "0.2.374"
                   :exclusions [org.clojure/tools.reader]]
-                 [sablono "0.3.6"]
+                 [sablono "0.4.0"]
                  [org.omcljs/om "0.9.0"]
                  [prismatic/om-tools "0.3.12"]
                  [camel-snake-kebab "0.3.2"]
