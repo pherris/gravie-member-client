@@ -14,9 +14,7 @@
 
 (def app-state
   (atom
-    { :comms {:nav (chan)
-                 :api (chan)
-                 :user-event (chan)}
+    { :comms { :user-event (chan)}
       :coverage-details {
                          :plan-coverage-date "3/1/2016"
                          :available-dates ["Select..." "3/1/2016" "4/1/2014" "5/1/2014"]
@@ -50,16 +48,16 @@
                     }
       :errors {
                 :coverage-details {
-                                 :plan-coverage-date ["error one" "2" "basd"]
+                                 :plan-coverage-date nil ;["error one" "2" "basd"]
                                     }
-                :participants { :errors ["BLA"] ;can we avoid this generic errors object? I think not, how else to show an error for all participants?
+                :participants { :errors nil ;["BLA"] ;can we avoid this generic errors object? I think not, how else to show an error for all participants?
                                 :people [{ :first-name ["so sad, your first name has an error"]
-                                           :last-name ["oops, fill me in"]
-                                           :birth-date ["not very good at typing are we?"]
-                                           :gender ["kindof tough to get this one wrong isnt it?"]
-                                           :tobacco ["these are the kinds of things you should know"]
-                                           :relationship-type ["confusing in this day and age"]
-                                           :errors ["bummer, you also have a generic error"]} ;'general' might be a better name so we can (get-in state [:participant :errors :general])
+                                           ;:last-name ["oops, fill me in"]
+                                           ;:birth-date ["not very good at typing are we?"]
+                                           ;:gender ["kindof tough to get this one wrong isnt it?"]
+                                           ;:tobacco ["these are the kinds of things you should know"]
+                                           ;:relationship-type ["confusing in this day and age"]
+                                           :errors nil} ;["bummer, you also have a generic error"]} ;'general' might be a better name so we can (get-in state [:participant :errors :general])
                                          {}
                                          { :errors ["the child has an error" "or two"]}]}}}))
 
@@ -94,28 +92,26 @@
   (mlog "User-action-handler called with action" action " message " message)
   (swallow-errors
    (let [previous-state @state]
+     (println "user-action-handler" previous-state)
      (swap! state (partial user-events/user-action-state action message))
      (user-events/user-action-event! action message previous-state @state history))))
 
 (defn ^:export setup! [state]
-  (let [nav-ch (-> @state :comms :nav)
-        api-ch (-> @state :comms :api)
+  (let [api-ch (-> @state :comms :api)
         user-event-ch (-> @state :comms :user-event)]
-;;         history (routes/define-routes! state)]
 
     (go (while true
           (alt!
-;;             nav-ch ([message] (nav-handler message state history))
-;;             api-ch ([message] (api-handler message state))
             user-event-ch ([message] (user-action-handler message state nil)))))))
 
-
+;look at the instrument method in root to log numbers of times things change
 (om/root coverage-details/coverage-details app-state
          {:target (. js/document (getElementById "coverageDetails"))
           :shared {:comms (-> @app-state :comms)}})
 
 (om/root coverage-details/coverage-participants app-state
-         {:target (. js/document (getElementById "coverageParticipants"))})
+         {:target (. js/document (getElementById "coverageParticipants"))
+                    :shared {:comms (-> @app-state :comms)}})
 
 (defn on-js-reload []
   ;; optionally touch your app-state to force rerendering depending on

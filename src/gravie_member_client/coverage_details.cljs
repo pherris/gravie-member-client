@@ -20,9 +20,9 @@
         (dom/button {:className "btn-bigadd" :type "button"} "Add a Dependant")))))
 
 (defn coverage-participant-heading [participant owner]
-  (let [{:keys [:member :first-name :last-name :birth-date :gender :tobacco :errors]} participant]
-    (reify om/IRender
-      (render [_]
+  (reify om/IRender
+    (render [_]
+      (let [{:keys [:member :first-name :last-name :birth-date :gender :tobacco :errors]} participant]
         (dom/div
           (dom/div {:className (dom-utils/include-error-class "panel-heading clearfix" (:errors errors))}
             (dom/label {:className "panel-title checkbox active"} ;; handle toggling active
@@ -219,6 +219,6 @@
               (om/build dom-utils/select-box {
                                      :name "planCoverageDate"
                                      :options (get-in app-state [:coverage-details :available-dates])
-                                     :selected (get-in app-state plan-coverage-date-path)})
+                                     :defaultValue (get-in app-state plan-coverage-date-path)})
               (dom/span {:className "error-content"} plan-coverage-date-error)))
           (om/build zip-and-county app-state))))))
