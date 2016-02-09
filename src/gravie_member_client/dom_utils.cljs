@@ -42,14 +42,13 @@
 
 (defn select-box [data owner]
   (let [options (:options data)
-        selected (:selected data)]
+        defaultValue (:defaultValue data)]
     (reify
       om/IRender
       (render [_]
-              (println selected options)
-        (dom/select {:name "form-container" :className "form-control form-66 angular ng-pristine ng-valid ng-touched"}
+        (dom/select {:name "form-container" :className "form-control form-66 angular ng-pristine ng-valid ng-touched" :value defaultValue }
           (for [option options]
-            (dom/option (when (= selected option) {:selected true}) option)))))))
+            (dom/option option)))))))
 
 (defn input-text [data owner]
   (reify
