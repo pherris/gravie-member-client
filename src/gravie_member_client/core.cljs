@@ -53,8 +53,14 @@
                                  :plan-coverage-date ["error one" "2" "basd"]
                                     }
                 :participants { :errors ["BLA"] ;can we avoid this generic errors object? I think not, how else to show an error for all participants?
-                                :people [{ :first-name ["so sad, your first name has an error"]}
-                                         [ ]
+                                :people [{ :first-name ["so sad, your first name has an error"]
+                                           :last-name ["oops, fill me in"]
+                                           :birth-date ["not very good at typing are we?"]
+                                           :gender ["kindof tough to get this one wrong isnt it?"]
+                                           :tobacco ["these are the kinds of things you should know"]
+                                           :relationship-type ["confusing in this day and age"]
+                                           :errors ["bummer, you also have a generic error"]} ;'general' might be a better name so we can (get-in state [:participant :errors :general])
+                                         {}
                                          { :errors ["the child has an error" "or two"]}]}}}))
 
 ;; (defn api-handler

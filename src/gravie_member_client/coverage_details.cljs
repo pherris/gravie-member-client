@@ -23,122 +23,126 @@
   (let [{:keys [:member :first-name :last-name :birth-date :gender :tobacco :errors]} participant]
     (reify om/IRender
       (render [_]
-        (dom/div {:className (dom-utils/include-error-class "panel-heading clearfix" errors)}
-          (dom/label {:className "panel-title checkbox active"} ;; handle toggling active
-            (om/build dom-utils/form-checkbox-sprite "")
-            (om/build dom-utils/form-checkbox {:checked true :disabled true })
-              (dom/span (str first-name " " last-name) ))
-          (dom/div {:className "panel-subtitle text-center pl0 pr0"} "") ;;need to handle male/female icon
-          (dom/div {:className "col-xs-12 col-sm-7"}
-            (dom/div {:className "col-md-6"}
-              (dom/ul {:className "list-unstyled"}
-                (dom/li
-                  (dom/span birth-date)
-                  (dom/span " (" (years-ago birth-date) ")"))
-                (dom/li
-                  (dom/span {:className "grey"} (if (= member true) "You!" "Other!"))))) ;;add relationship to the person object
-            (dom/div {:className "col-md-6"}
-              (dom/ul {:className "list-unstyled"}
-                (dom/li
-                  (dom/span "Tobacco:" " " (str tobacco)))))))))))
+        (dom/div
+          (dom/div {:className (dom-utils/include-error-class "panel-heading clearfix" (:errors errors))}
+            (dom/label {:className "panel-title checkbox active"} ;; handle toggling active
+              (om/build dom-utils/form-checkbox-sprite "")
+              (om/build dom-utils/form-checkbox {:checked true :disabled true })
+                (dom/span (str first-name " " last-name) ))
+            (dom/div {:className "panel-subtitle text-center pl0 pr0"} "") ;;need to handle male/female icon
+            (dom/div {:className "col-xs-12 col-sm-7"}
+              (dom/div {:className "col-md-6"}
+                (dom/ul {:className "list-unstyled"}
+                  (dom/li
+                    (dom/span birth-date)
+                    (dom/span " (" (years-ago birth-date) ")"))
+                  (dom/li
+                    (dom/span {:className "grey"} (if (= member true) "You!" "Other!"))))) ;;add relationship to the person object
+              (dom/div {:className "col-md-6"}
+                (dom/ul {:className "list-unstyled"}
+                  (dom/li
+                    (dom/span "Tobacco:" " " (str tobacco)))))))
+            (dom/div {:className (dom-utils/include-error-class "mb0" (:errors errors))}
+              (dom/div {:className "alert alert-danger error"} (:errors errors))))))))
 
 (defn coverage-participant-form [participant owner]
-  (let [first-name-error (:errors (:first-name participant))
-        last-name-error (:errors (:last-name participant))
-        birth-date-error (:errors (:birth-date participant))
-        gender-error (:errors (:gender participant))
-        tobacco-error (:errors (:tobacco participant))
+  (reify om/IRender
+    (render [_]
+      (let [first-name-error (:first-name (:errors participant))
+            last-name-error (:last-name (:errors participant))
+            birth-date-error (:birth-date (:errors participant))
+            gender-error (:gender (:errors participant))
+            tobacco-error (:tobacco (:errors participant))
         {:keys [:member :first-name :last-name :birth-date :gender :tobacco :errors]} participant]
-    (reify om/IRender
-      (render [_]
-        (dom/div {:className "panel-body pb0"}
-          (dom/form {:className "form-horizontal ng-pristine ng-valid ng-valid-required ng-valid-maxlength ng-valid-invalid"}
-            (dom/div {:className (dom-utils/include-error-class "form-group" (list first-name-error last-name-error))}
-              (dom/label {:className "control-label col-sm-2"} "Name *")
-              (dom/div {:className "col-sm-8 p0"}
-                (dom/div {:className (dom-utils/include-error-class "col-sm-6 mb0" first-name-error)}
-                  (dom/label {:className "sr-only" :for "firstName"} "First Name")
-                  (om/build dom-utils/input-text {
-                                         :name "firstName"
-                                         :id "firstName"
-                                         :className "form-control angular ng-pristine ng-untouched ng-valid ng-valid-required ng-valid-maxlength"
-                                         :placeholder "First"
-                                         :maxLength 50
-                                         :required true
-                                         :value first-name
-                                         :on-change #(utils/edit-input owner [:coverage-details :participants :people :first-name :value] %)}) ;how to identify the individual person?
-                  (om/build dom-utils/error-div "Field is required"))
-                (dom/div {:className (dom-utils/include-error-class "col-sm-6 p0 mb0" last-name-error)}
-                  (dom/label {:className "sr-only" :for "lastName"} "Last Name")
-                  (om/build dom-utils/input-text {
-                                         :name "lastName"
-                                         :id "lastName"
-                                         :className "form-control angular ng-pristine ng-untouched ng-valid ng-valid-required ng-valid-maxlength"
-                                         :placeholder "Last"
-                                         :maxLength 50
-                                         :required true
-                                         :value last-name
-                                         :on-change #(utils/edit-input owner [:coverage-details :participants :people :last-name :value] %)}))))
-              (dom/div {:className (dom-utils/include-error-class "form-group" birth-date-error)}
-                (dom/span
-                  (dom/label {:className "control-label col-sm-2 whs-nw" :for "birthDate"} "Birth Date *")
-                  (dom/div {:className "col-sm-4"}
+          (dom/div {:className "panel-body pb0"}
+            (dom/form {:className "form-horizontal ng-pristine ng-valid ng-valid-required ng-valid-maxlength ng-valid-invalid"}
+              (dom/div {:className (dom-utils/include-error-class "form-group" [first-name-error last-name-error])}
+                (dom/label {:className "control-label col-sm-2"} "Name *")
+                (dom/div {:className "col-sm-8 p0"}
+                  (dom/div {:className (dom-utils/include-error-class "col-sm-6 mb0" first-name-error)}
+                    (dom/label {:className "sr-only" :for "firstName"} "First Name")
                     (om/build dom-utils/input-text {
-                                         :name "birthDate"
-                                         :id "birthDate"
-                                         :className "form-control angular ng-pristine ng-untouched ng-valid ng-valid-required ng-valid-maxlength"
-                                         :placeholder "mm/dd/yyyy"
-                                         :maxLength 10
-                                         :required true
-                                         :value birth-date
-                                         :on-change #(utils/edit-input owner [:coverage-details :participants :people :birth-date :value] %)})
-                    (om/build dom-utils/error-div birth-date-error))))
-              (dom/div {:className "form-group"}
-                (dom/div {:className (dom-utils/include-error-class "d-i" gender-error)}
-                  (dom/label {:className "control-label col-sm-2" :for "gender"} "Gender *")
-                  (dom/div {:className "col-sm-4"}
-                    (om/build dom-utils/form-binary {
-                                          :value gender
-                                          :option-one {
-                                                        :className ""
-                                                        :name "gender"
-                                                        :on-change nil
-                                                        :display "Male"
-                                                        :value "MALE"
-                                                        }
-                                          :option-two {
-                                                        :className ""
-                                                        :name "gender"
-                                                        :on-change nil
-                                                        :display "Female"
-                                                        :value "FEMALE"
-                                                        }})
-                    (om/build dom-utils/error-div birth-date-error)))
-                (dom/div {:className (dom-utils/include-error-class "d-i" tobacco-error)}
-                  (dom/label {:className "control-label col-sm-2" :for "gender"} "Tobacco *")
-                  (dom/div {:className "col-sm-4"}
-                    (om/build dom-utils/form-binary {
-                                          :value tobacco
-                                          :option-one {
-                                                        :className ""
-                                                        :name "tobacco"
-                                                        :on-change nil
-                                                        :display "Yes"
-                                                        :value true
-                                                        }
-                                          :option-two {
-                                                        :className ""
-                                                        :name "tobacco"
-                                                        :on-change nil
-                                                        :display "No"
-                                                        :value false
-                                                        }})
-                    (om/build dom-utils/error-div birth-date-error))))
-              (dom/hr)
-              (dom/div {:className "row"}
-                (dom/div {:className "col-sm-12"}
-                  (dom/button {:name "delete" :type "button" :className "btn btn-link red ng-hide"} "Remove")
-                  (dom/a { name="finish" :className "btn btn-primary pull-right" } "Done")))))))))
+                                           :name "firstName"
+                                           :id "firstName"
+                                           :className "form-control angular ng-pristine ng-untouched ng-valid ng-valid-required ng-valid-maxlength"
+                                           :placeholder "First"
+                                           :maxLength 50
+                                           :required true
+                                           :value first-name
+                                           :on-change #(utils/edit-input owner [:coverage-details :participants :people :first-name :value] %)}) ;how to identify the individual person?
+                    (om/build dom-utils/error-div first-name-error))
+                  (dom/div {:className (dom-utils/include-error-class "col-sm-6 p0 mb0" last-name-error)}
+                    (dom/label {:className "sr-only" :for "lastName"} "Last Name")
+                    (om/build dom-utils/input-text {
+                                           :name "lastName"
+                                           :id "lastName"
+                                           :className "form-control angular ng-pristine ng-untouched ng-valid ng-valid-required ng-valid-maxlength"
+                                           :placeholder "Last"
+                                           :maxLength 50
+                                           :required true
+                                           :value last-name
+                                           :on-change #(utils/edit-input owner [:coverage-details :participants :people :last-name :value] %)})
+                    (om/build dom-utils/error-div last-name-error))))
+                (dom/div {:className (dom-utils/include-error-class "form-group" birth-date-error)}
+                  (dom/span
+                    (dom/label {:className "control-label col-sm-2 whs-nw" :for "birthDate"} "Birth Date *")
+                    (dom/div {:className "col-sm-4"}
+                      (om/build dom-utils/input-text {
+                                           :name "birthDate"
+                                           :id "birthDate"
+                                           :className "form-control angular ng-pristine ng-untouched ng-valid ng-valid-required ng-valid-maxlength"
+                                           :placeholder "mm/dd/yyyy"
+                                           :maxLength 10
+                                           :required true
+                                           :value birth-date
+                                           :on-change #(utils/edit-input owner [:coverage-details :participants :people :birth-date :value] %)})
+                      (om/build dom-utils/error-div birth-date-error))))
+                (dom/div {:className "form-group"}
+                  (dom/div {:className (dom-utils/include-error-class "d-i" gender-error)}
+                    (dom/label {:className "control-label col-sm-2" :for "gender"} "Gender *")
+                    (dom/div {:className "col-sm-4"}
+                      (om/build dom-utils/form-binary {
+                                            :value gender
+                                            :option-one {
+                                                          :className ""
+                                                          :name "gender"
+                                                          :on-change nil
+                                                          :display "Male"
+                                                          :value "MALE"
+                                                          }
+                                            :option-two {
+                                                          :className ""
+                                                          :name "gender"
+                                                          :on-change nil
+                                                          :display "Female"
+                                                          :value "FEMALE"
+                                                          }})
+                      (om/build dom-utils/error-div gender-error)))
+                  (dom/div {:className (dom-utils/include-error-class "d-i" tobacco-error)}
+                    (dom/label {:className "control-label col-sm-2" :for "gender"} "Tobacco *")
+                    (dom/div {:className "col-sm-4"}
+                      (om/build dom-utils/form-binary {
+                                            :value tobacco
+                                            :option-one {
+                                                          :className ""
+                                                          :name "tobacco"
+                                                          :on-change nil
+                                                          :display "Yes"
+                                                          :value true
+                                                          }
+                                            :option-two {
+                                                          :className ""
+                                                          :name "tobacco"
+                                                          :on-change nil
+                                                          :display "No"
+                                                          :value false
+                                                          }})
+                      (om/build dom-utils/error-div tobacco-error))))
+                (dom/hr)
+                (dom/div {:className "row"}
+                  (dom/div {:className "col-sm-12"}
+                    (dom/button {:name "delete" :type "button" :className "btn btn-link red ng-hide"} "Remove")
+                    (dom/a { name="finish" :className "btn btn-primary pull-right" } "Done")))))))))
 
 (defn coverage-participant [participant owner]
   (reify
@@ -158,12 +162,12 @@
             people-errors (get-in app-state [:errors :participants :people])
             ; note that people and their errors are combined here as well as being associated with the index they hold in the vector
             people-with-errors (map-indexed (fn [index participant]
-                                              (let [pwe (assoc participant :errors (:errors (get people-errors index)))]
+                                              (let [pwe (assoc participant :errors (get people-errors index))]
                                                 (assoc pwe :index index))) (:people participants))]
           (dom/div
             (dom/div {:className (dom-utils/include-error-class "" participants-errors)}
               (dom/label {:className "control-label control-label-lg"} "Tell us who needs coverage")
-              (dom/div {:className "alert alert-danger"} participants-errors))
+              (dom/div {:className "alert alert-danger error"} participants-errors))
             (om/build-all coverage-participant people-with-errors)
             (om/build coverage-add app-state))))))
 
