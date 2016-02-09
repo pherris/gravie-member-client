@@ -6,12 +6,17 @@
             [gravie-member-client.user-events :as user-events]
             [gravie-member-client.dom-utils :as dom-utils]
             [cljs.core.async :as async :refer [<! chan put!]]
-            [clojure.string :as string])
+            [clojure.string :as string]
+            [cljs-time.core :as t]
+            [cljs-time.coerce :as coerce])
   (:require-macros [cljs.core.async.macros :as am :refer [go alt!]]
             [gravie-member-client.util :as util :refer [swallow-errors]]))
 
 (defn years-ago [from-date]
-  (-> (.moment js/window) (.diff (.moment js/window from-date "MM/DD/YYYY") "years")))
+  (-> (t/interval (coerce/from-string from-date) (t/now))
+      (t/in-years))
+  #_(-> (.moment js/window)
+      (.diff (.moment js/window from-date "MM/DD/YYYY") "years")))
 
 (defn coverage-add [app-data owner]
   (reify om/IRender
