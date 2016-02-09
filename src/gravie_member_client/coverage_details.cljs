@@ -209,15 +209,6 @@
                   (dom/span {:className "error-content"} county-error)))
             (dom/hr))))))
 
-
-#_[:select.form-control {:value (:disguise-id workbook)
-                         :on-change #(utils/edit-input owner [:current-destination 
-                                                              :current-workbook
-                                                              :disguise-id] %)}
-   [:option {:value ""} ""]
-   (for [disguise disguises]
-     [:option {:value (:id disguise) :key (:id disguise)} (:name disguise)])]
-
 (defn coverage-details [app-state owner]
   (reify
     om/IRender
