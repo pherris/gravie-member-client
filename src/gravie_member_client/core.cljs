@@ -3,6 +3,7 @@
             [om-tools.dom :as dom :include-macros true]
             [gravie-member-client.async :refer [raise!]]
             [gravie-member-client.user-events :as user-events]
+            [gravie-member-client.api :as api]
             [gravie-member-client.coverage-details :as coverage-details]
             [gravie-member-client.footer :as footer]
             [gravie-member-client.utils :as utils :refer [mlog]]
@@ -29,31 +30,14 @@
              :user-event (chan)}}
     init-page-state)))
 
-;; (defn api-handler
-;;   [value state]
-;;   (println "received api request")
-;;   (swallow-errors
-;;    (let [message (first value)
-;;          status (second value)
-;;          api-data (nth value 2)]
-;;      (api/api-event message status api-data state))))
-
-;; (defn nav-handler
-;;   [navigation-point state history]
-;;   (println "received nav message" navigation-point)
-;;   (swallow-errors
-;;    (let [args nil]
-;;      (if (and (nil? (-> @state :auth :kat-token))
-;;               (not= (:page navigation-point) :home))
-;;        ;;todo: save args and deep redirect after auth
-;;        (do (.setToken history ""))
-;;        (do
-;;          (swap! state #(assoc %
-;;                               :page nil
-;;                               :page-errors nil
-;;                               :page-data nil))
-;;          (swap! state (partial nav/navigated-to-state navigation-point args))
-;;          (nav/navigated-to-action navigation-point args @state))))))
+(defn api-handler
+  [value state]
+  (println "received api request")
+  (swallow-errors
+   (let [message (first value)
+         status (second value)
+         api-data (nth value 2)]
+     (api/api-event message status api-data state))))
 
 (defn user-action-handler
   [{:keys [action] :as message} state history]
@@ -71,7 +55,8 @@
 
     (go (while true
           (alt!
-            user-event-ch ([message] (user-action-handler message state nil)))))))
+            user-event-ch ([message] (user-action-handler message state nil))
+            api-ch ([message] (api-handler message state)))))))
 
 ;look at the instrument method in root to log numbers of times things change
 (println "jsModel:" (-> js/gravie

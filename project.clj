@@ -14,7 +14,8 @@
                  [org.omcljs/om "0.9.0"]
                  [prismatic/om-tools "0.3.12"]
                  [camel-snake-kebab "0.3.2"]
-                 [com.andrewmcveigh/cljs-time "0.4.0"]]
+                 [com.andrewmcveigh/cljs-time "0.4.0"]
+                 [cljs-ajax "0.5.1"]]
 
   :plugins [[lein-figwheel "0.5.0-6"]
             [lein-cljsbuild "1.1.2" :exclusions [[org.clojure/clojure]]]]

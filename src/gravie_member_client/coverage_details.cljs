@@ -2,8 +2,9 @@
   (:require [om.core :as om :include-macros true]
             [om-tools.dom :as dom :include-macros true]
             [gravie-member-client.async :refer [raise!]]
+            [gravie-member-client.api :as api :refer [api-event]]
             [gravie-member-client.utils :as utils :refer [mlog]]
-            [gravie-member-client.user-events :as user-events]
+            [gravie-member-client.user-events :as user-events :refer [user-action-event!]]
             [gravie-member-client.dom-utils :as dom-utils]
             [cljs.core.async :as async :refer [<! chan put!]]
             [clojure.string :as string]
@@ -13,6 +14,22 @@
             [sablono.core :as html :refer-macros [html]])
   (:require-macros [cljs.core.async.macros :as am :refer [go alt!]]
             [gravie-member-client.util :as util :refer [swallow-errors]]))
+
+(defmethod user-action-event! :continue-clicked
+  [action {destination :destination :as message} previous-state current-state history]
+  (mlog "Continue clicked")
+  (api/medical-coverage-details (-> current-state :comms :api) {:foo "bar"}))
+
+(defmethod api-event [:medical-coverage-needs :success]
+  [message status data state]
+  (mlog "medical-coverage-needs api event")
+  (println data)
+  state)
+
+(defmethod user-action-event! :continue-clicked
+  [action {destination :destination :as message} previous-state current-state history]
+  (mlog "Continue clicked")
+  (api/medical-coverage-details (-> current-state :comms :api) {:foo "bar"}))
 
 (defn years-ago [from-date]
   (-> (t/interval (coerce/from-string from-date) (t/now))
