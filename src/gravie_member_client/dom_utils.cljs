@@ -43,14 +43,15 @@
       (dom/input {:type "checkbox" :className "ng-pristine ng-untouched ng-valid" :disabled (:disabled field) :checked (:checked field)}))))
 
 (defn select-box [data owner]
-  (let [options (:options data)
-        defaultValue (:defaultValue data)]
-    (reify
-      om/IRender
-      (render [_]
-        (dom/select {:name "form-container" :className "form-control form-66 angular ng-pristine ng-valid ng-touched" :value defaultValue }
+  (reify om/IRender
+    (render [_]
+      (let [options (:options data)
+            value (:value data)]
+        (dom/select {:name "form-container" :className "form-control form-66 angular ng-pristine ng-valid ng-touched" :value value }
           (for [option options]
-            (dom/option option)))))))
+            (let [value (:value option)
+                  display (:display option)]
+              (dom/option value display))))))))
 
 (defn input-text [data owner]
   (reify

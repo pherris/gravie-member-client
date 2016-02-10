@@ -101,7 +101,14 @@
                                            :required true
                                            :value birth-date
                                            :on-change #(utils/edit-input owner [:coverage-details :participants :people :birth-date :value] %)})
-                      (om/build dom-utils/error-div birth-date-error))))
+                      (om/build dom-utils/error-div birth-date-error)))
+                  (dom/div {:className "d-i"}
+                    (dom/label {:className "control-label col-sm-2" :for "relationshipType"} "Relation *")
+                    (dom/div {:className "col-sm-4"}
+                      (om/build dom-utils/select-box {
+                                       :options [{ :value "?" }
+                                                 { :value "SPOUSE"}]
+                                       :value ""}))))
                 (dom/div {:className "form-group"}
                   (dom/div {:className (dom-utils/include-error-class "d-i" gender-error)}
                     (dom/label {:className "control-label col-sm-2" :for "gender"} "Gender *")
@@ -190,7 +197,6 @@
         (html
          [:div
           [:hr]
-
           [:div.form-group
            [:label.control-label.col-sm-4 {:for "zipCode"}
             [:span "ZIP Code"]
@@ -200,7 +206,6 @@
                              :value zip-code
                              :on-change #(utils/edit-input owner [:coverage-details :zip-code] %)
                              }]]]
-
           [:div.form-group
            [:label.control-label.col-sm-4 {:for "county"}
             [:span "County"]
@@ -211,10 +216,9 @@
                                                                                 :plan-coverage-date] %)}
                   (for [available-county (-> coverage-details :available-counties)]
                     [:option {:value (:fips-code available-county)
-                              :key (:fips-code available-county)} 
+                              :key (:fips-code available-county)}
                      (:name available-county)])]
-            ]]])
-))))
+            ]]])))))
 
 (defn coverage-details [app-state owner]
   (reify
@@ -225,7 +229,7 @@
             available-plan-coverage-dates (-> app-state :coverage-details :available-plan-coverage-dates)
             display-date-format (format/formatter "M/d/yyyy")]
         (html [:div.form-horizontal
-               [:div.form-group 
+               [:div.form-group
                 [:label.control-label.col-sm-4
                  (om/build dom-utils/glossary-term ["Requested Start Date"])
                  (om/build dom-utils/form-field-required-icon nil)]
@@ -238,6 +242,6 @@
                     [:option {:value coverage-date :key coverage-date} (->> coverage-date
                                                                             (coerce/from-string)
                                                                             (format/unparse display-date-format))])]
-                 
+
                  [:span.error-content]]]
                (om/build zip-and-county app-state)])))))

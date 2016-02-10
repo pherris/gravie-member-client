@@ -57,6 +57,7 @@
 
 (defn user-action-handler
   [{:keys [action] :as message} state history]
+  (println "TEST")
   (mlog "User-action-handler called with action" action " message " message)
   (swallow-errors
    (let [previous-state @state]
@@ -90,6 +91,7 @@
          {:target (. js/document (getElementById "stepFooter"))
                     :shared {:comms (-> @app-state :comms)}})
 
+(setup! app-state)
 
 (defn on-js-reload []
   ;; optionally touch your app-state to force rerendering depending on
