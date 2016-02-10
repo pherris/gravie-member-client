@@ -4,6 +4,7 @@
             [gravie-member-client.async :refer [raise!]]
             [gravie-member-client.user-events :as user-events]
             [gravie-member-client.coverage-details :as coverage-details]
+            [gravie-member-client.footer :as footer]
             [gravie-member-client.utils :as utils :refer [mlog]]
             [cljs.core.async :as async :refer [<! chan put!]]
             [clojure.string :as string]
@@ -84,6 +85,11 @@
 (om/root coverage-details/coverage-participants app-state
          {:target (. js/document (getElementById "coverageParticipants"))
                     :shared {:comms (-> @app-state :comms)}})
+
+(om/root footer/step-footer app-state
+         {:target (. js/document (getElementById "stepFooter"))
+                    :shared {:comms (-> @app-state :comms)}})
+
 
 (defn on-js-reload []
   ;; optionally touch your app-state to force rerendering depending on
