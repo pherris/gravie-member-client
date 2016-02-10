@@ -1,6 +1,7 @@
 (ns gravie-member-client.dom-utils
   (:require [om.core :as om :include-macros true]
-            [om-tools.dom :as dom :include-macros true])
+            [om-tools.dom :as dom :include-macros true]
+            [sablono.core :as html :refer-macros [html]])
   (:refer-clojure :exclude [uuid]))
 
 (defn get-error [field app-state]
@@ -26,7 +27,8 @@
   (reify
     om/IRender
     (render [_]
-      (dom/span {:className "has-error-icon glyphicon glyphicon-exclamation-sign"} ""))))
+      (html
+       [:span.has-error-icon.glyphicon.glyphicon-exclamation-sign]))))
 
 (defn form-checkbox-sprite [_ owner]
   (reify

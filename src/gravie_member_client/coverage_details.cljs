@@ -180,34 +180,41 @@
   (reify
     om/IRender
     (render [_]
-      (let [ zip-code-path [:coverage-details :zip-code]
-        county-path [:coverage-details :county]
-        zip-code-error (dom-utils/get-error2 zip-code-path app-state)
-        county-error (dom-utils/get-error2 county-path app-state)
-        county (get-in app-state county-path)
-        zip-code (get-in app-state zip-code-path)
-        coverage-details (:coverage-details app-state)]
-          (dom/div
-            (dom/hr)
-            (dom/div {:className (dom-utils/include-error-class "form-group" zip-code-error)}
-              (dom/label {:className "control-label col-sm-4" :for "zipCode"}
-                (dom/span "ZIP Code")
-                (om/build dom-utils/form-field-required-icon ""))
-              (dom/div {:className "col-sm-8" }
-                (om/build dom-utils/input-text {
-                                     :id "zipCode"
-                                     :value zip-code
-                                     :on-change #(utils/edit-input owner [:coverage-details :zip-code] %)})
-                (dom/span {:className "error-content"} zip-code-error)))
-            (dom/div {:className (dom-utils/include-error-class "form-group" county-error)}
-                (dom/label {:className "control-label col-sm-4"}
-                  (dom/span "County"))
-                (dom/div {:className "col-sm-8"}
-                  (om/build dom-utils/select-box {
-                                       :options (:available-counties coverage-details)
-                                       :value county})
-                  (dom/span {:className "error-content"} county-error)))
-            (dom/hr))))))
+      (let [zip-code-path [:coverage-details :zip-code]
+            county-path [:coverage-details :county]
+            zip-code-error (dom-utils/get-error2 zip-code-path app-state)
+            county-error (dom-utils/get-error2 county-path app-state)
+            county (get-in app-state county-path)
+            zip-code (get-in app-state zip-code-path)
+            coverage-details (:coverage-details app-state)]
+        (html
+         [:div
+          [:hr]
+
+          [:div.form-group
+           [:label.control-label.col-sm-4 {:for "zipCode"}
+            [:span "ZIP Code"]
+            (om/build dom-utils/form-field-required-icon "")]
+           [:div.col-sm-8
+            [:input.form-control.form-33#zipCode {:type "text"
+                             :value zip-code
+                             :on-change #(utils/edit-input owner [:coverage-details :zip-code] %)
+                             }]]]
+
+          [:div.form-group
+           [:label.control-label.col-sm-4 {:for "county"}
+            [:span "County"]
+            (om/build dom-utils/form-field-required-icon "")]
+           [:div.col-sm-8
+            [:select.form-control.form-66 {:value (-> app-state :coverage-details :county-fips-code)
+                                           :on-change #(utils/edit-input owner [:coverage-details
+                                                                                :plan-coverage-date] %)}
+                  (for [available-county (-> coverage-details :available-counties)]
+                    [:option {:value (:fips-code available-county)
+                              :key (:fips-code available-county)} 
+                     (:name available-county)])]
+            ]]])
+))))
 
 (defn coverage-details [app-state owner]
   (reify
