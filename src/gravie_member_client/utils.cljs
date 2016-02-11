@@ -15,4 +15,4 @@
   [owner path event & {:keys [value]
                        :or {value (if (nil? event) nil (.. event -target -value))}}]
   (println "Setting value for path" path "to" value)
-  (raise! owner {:action :edited-input :path path :value value}))
+  (raise! owner {:action :edited-input :path path :value (if (= "" value) nil value)}))

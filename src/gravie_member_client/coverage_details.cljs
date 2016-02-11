@@ -50,16 +50,17 @@
    :index s/Int
    :ssn (s/maybe s/Str)
    :is-member s/Bool
-   :is-editing (s/maybe s/Bool)
+   (s/optional-key :is-editing) (s/maybe s/Bool)
    (s/optional-key :errors) (s/maybe s/Str)})
 
 (defn done-editing! [owner participant errorObject]
   "Takes the results of a plumatic schema s/check and adds errors to the participant"
   (println "calling done-editing" errorObject)
   (let [errors (keys (dissoc errorObject :errors))]
-    (println "HERE" errors)
-    (doseq [error-key errors]
-      (utils/edit-input owner [:errors :participants :people (:index participant) error-key] nil :value "error"))))
+    (if (nil? errors)
+      (utils/edit-input owner [:participants :people (:index participant) :is-editing] nil :value false)
+      (doseq [error-key errors]
+        (utils/edit-input owner [:errors :participants :people (:index participant) error-key] nil :value (str "error: " error-key))))))
 
 (defn years-ago [from-date]
   (let [from (coerce/from-string from-date)]
@@ -202,13 +203,13 @@
                                             :value is-tobacco-user
                                             :option-one {
                                                           :name "tobacco"
-                                                          :on-click #(utils/edit-input owner [:participants :people index :is-tobacco-user] %)
+                                                          :on-click #(utils/edit-input owner [:participants :people index :is-tobacco-user] nil :value true)
                                                           :display "Yes"
                                                           :value true
                                                           }
                                             :option-two {
                                                           :name "tobacco"
-                                                          :on-click #(utils/edit-input owner [:participants :people index :is-tobacco-user] %)
+                                                          :on-click #(utils/edit-input owner [:participants :people index :is-tobacco-user] nil :value false)
                                                           :display "No"
                                                           :value false
                                                           }})
