@@ -68,7 +68,7 @@
 
 (defn error-div [error-message owner]
   (reify om/IRender (render [_]
-    (dom/div {:className "error-content ng-hide"} error-message))))
+    (dom/div {:className "error-content"} error-message))))
 
 (defn form-binary [config owner]
   (let [option-one (:option-one config)

@@ -47,7 +47,8 @@
      ;(println "user-action-handler" previous-state)
      (swap! state (partial user-events/user-action-state action message))
      (user-events/user-action-event! action message previous-state @state history)
-     (println (.stringify js/JSON (clj->js (get-in @state [:participants])) nil 2)))))
+     (println (.stringify js/JSON (clj->js (get-in @state [:errors :participants])) nil 2))
+     )))
 
 (defn ^:export setup! [state]
   (let [api-ch (-> @state :comms :api)

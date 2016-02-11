@@ -11,7 +11,10 @@
             [cljs-time.core :as t]
             [cljs-time.coerce :as coerce]
             [cljs-time.format :as format]
-            [sablono.core :as html :refer-macros [html]])
+            [sablono.core :as html :refer-macros [html]]
+            [schema.core :as s]
+            [schema.spec.core :as spec :include-macros true]
+            [schema.utils :as s-utils])
   (:require-macros [cljs.core.async.macros :as am :refer [go alt!]]
             [gravie-member-client.util :as util :refer [swallow-errors]]))
 
@@ -30,6 +33,33 @@
   [action {destination :destination :as message} previous-state current-state history]
   (mlog "Continue clicked")
   (api/medical-coverage-details (-> current-state :comms :api) {:foo "bar"}))
+
+(def Participant-schema
+  "A schema for a person"
+  {:first-name s/Str
+   :last-name s/Str
+   :birth-date s/Str
+   :gender s/Str
+   :is-tobacco-user s/Bool
+   :relationship-type (s/maybe s/Str)
+   :existing-interview-products [(s/maybe s/Str)]
+   :existing-product-types [(s/maybe s/Str)]
+   :is-removable s/Bool
+   :id s/Int
+   :ssn-last-four (s/maybe s/Str)
+   :index s/Int
+   :ssn (s/maybe s/Str)
+   :is-member s/Bool
+   :is-editing (s/maybe s/Bool)
+   (s/optional-key :errors) (s/maybe s/Str)})
+
+(defn done-editing! [owner participant errorObject]
+  "Takes the results of a plumatic schema s/check and adds errors to the participant"
+  (println "calling done-editing" errorObject)
+  (let [errors (keys (dissoc errorObject :errors))]
+    (println "HERE" errors)
+    (doseq [error-key errors]
+      (utils/edit-input owner [:errors :participants :people (:index participant) error-key] nil :value "error"))))
 
 (defn years-ago [from-date]
   (let [from (coerce/from-string from-date)]
@@ -57,7 +87,7 @@
 (defn coverage-participant-heading [participant owner]
   (reify om/IRender
     (render [_]
-      (let [{:keys [:member :first-name :last-name :birth-date :gender :tobacco :errors]} participant]
+      (let [{:keys [:member :first-name :last-name :birth-date :gender :is-tobacco-user :errors]} participant]
         (dom/div
           (dom/div {:className (dom-utils/include-error-class "panel-heading clearfix" (:errors errors))}
             (dom/label {:className "panel-title checkbox active"} ;; handle toggling active
@@ -76,7 +106,7 @@
               (dom/div {:className "col-md-6"}
                 (dom/ul {:className "list-unstyled"}
                   (dom/li
-                    (dom/span "Tobacco:" " " (str tobacco)))))))
+                    (dom/span "Tobacco:" " " (str is-tobacco-user)))))))
             (dom/div {:className (dom-utils/include-error-class "mb0" (:errors errors))}
               (dom/div {:className "alert alert-danger error"} (:errors errors))))))))
 
@@ -87,10 +117,12 @@
             last-name-error (:last-name (:errors participant))
             birth-date-error (:birth-date (:errors participant))
             gender-error (:gender (:errors participant))
-            tobacco-error (:tobacco (:errors participant))
+            relationship-type-error (:relationship-type (:errors participant))
+            tobacco-error (:is-tobacco-user (:errors participant))
             birth-date (format-date (:birth-date participant))
-            {:keys [:member :first-name :last-name :gender :tobacco :errors :index :relationship-type]} participant]
-          (dom/div {:className "panel-body pb0"}
+            is-editing (:is-editing participant)
+            {:keys [:member :first-name :last-name :gender :is-tobacco-user :errors :index :relationship-type]} participant]
+          (dom/div {:className (str "panel-body pb0" (if (or (nil? is-editing) is-editing) "" " hide"))}
             (dom/form {:className "form-horizontal ng-pristine ng-valid ng-valid-required ng-valid-maxlength ng-valid-invalid"}
               (dom/div {:className (dom-utils/include-error-class "form-group" [first-name-error last-name-error])}
                 (dom/label {:className "control-label col-sm-2"} "Name *")
@@ -133,7 +165,6 @@
                                            :value (format-date birth-date)
                                            :on-change #(utils/edit-input owner [:participants :people index :birth-date] %)})
                       (om/build dom-utils/error-div birth-date-error)))
-                         (println "member" member)
                   (if (= member false)
                     (dom/div {:className "d-i"}
                       (dom/label {:className "control-label col-sm-2" :for "relationshipType"} "Relation *")
@@ -144,7 +175,8 @@
                                                  { :value "DOMESTIC_PARTNER" :display "Domestic Partner"}
                                                  { :value "CHILD" :display "Child"}]
                                        :value relationship-type
-                                       :on-change #(utils/edit-input owner [:participants :people index :relationship-type] %)})))
+                                       :on-change #(utils/edit-input owner [:participants :people index :relationship-type] %)})
+                        (om/build dom-utils/error-div relationship-type-error)))
                     (dom/span)))
                 (dom/div {:className "form-group"}
                   (dom/div {:className (dom-utils/include-error-class "d-i" gender-error)}
@@ -167,16 +199,16 @@
                     (dom/label {:className "control-label col-sm-2" :for "gender"} "Tobacco *")
                     (dom/div {:className "col-sm-4"}
                       (om/build dom-utils/form-binary {
-                                            :value tobacco
+                                            :value is-tobacco-user
                                             :option-one {
                                                           :name "tobacco"
-                                                          :on-click #(utils/edit-input owner [:participants :people index :tobacco] %)
+                                                          :on-click #(utils/edit-input owner [:participants :people index :is-tobacco-user] %)
                                                           :display "Yes"
                                                           :value true
                                                           }
                                             :option-two {
                                                           :name "tobacco"
-                                                          :on-click #(utils/edit-input owner [:participants :people index :tobacco] %)
+                                                          :on-click #(utils/edit-input owner [:participants :people index :is-tobacco-user] %)
                                                           :display "No"
                                                           :value false
                                                           }})
@@ -185,7 +217,10 @@
                 (dom/div {:className "row"}
                   (dom/div {:className "col-sm-12"}
                     (dom/button {:name "delete" :type "button" :className "btn btn-link red ng-hide"} "Remove")
-                    (dom/a { name="finish" :className "btn btn-primary pull-right" } "Done")))))))))
+                    (dom/a { :name "finish"
+                             :className "btn btn-primary pull-right"
+                             :on-click #(->> (s/check Participant-schema participant)
+                                            (done-editing! owner participant))} "Done")))))))))
 
 (defn coverage-participant [participant owner]
   (reify
@@ -205,8 +240,10 @@
             people-errors (get-in app-state [:errors :participants :people])
             ; note that people and their errors are combined here as well as being associated with the index they hold in the vector
             people-with-errors (map-indexed (fn [index participant]
+                                              ;TODO combine into one assoc
                                               (let [pwe (assoc participant :errors (get people-errors index))]
-                                                (assoc pwe :index index))) (:people participants))]
+                                                (println pwe)
+                                                (assoc pwe :index index :relationship-type (if (= (:member pwe) true) "MEMBER" (:relationship-type pwe))))) (:people participants))]
           (dom/div
             (dom/div {:className (dom-utils/include-error-class "" participants-errors)}
               (dom/label {:className "control-label control-label-lg"} "Tell us who needs coverage")
