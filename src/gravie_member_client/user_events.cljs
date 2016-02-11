@@ -18,6 +18,5 @@
 
 (defmethod user-action-state :edited-input
   [action {:keys [value path]} state]
-  (mlog "Edited input")
-  (mlog "Current state of path" (get-in state path))
+  (mlog "Edited input" action  state)
   (assoc-in state path value))

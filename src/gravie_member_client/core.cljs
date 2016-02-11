@@ -41,13 +41,13 @@
 
 (defn user-action-handler
   [{:keys [action] :as message} state history]
-  (println "TEST")
   (mlog "User-action-handler called with action" action " message " message)
   (swallow-errors
    (let [previous-state @state]
-     (println "user-action-handler" previous-state)
+     ;(println "user-action-handler" previous-state)
      (swap! state (partial user-events/user-action-state action message))
-     (user-events/user-action-event! action message previous-state @state history))))
+     (user-events/user-action-event! action message previous-state @state history)
+     (println (.stringify js/JSON (clj->js (get-in @state [:participants])) nil 2)))))
 
 (defn ^:export setup! [state]
   (let [api-ch (-> @state :comms :api)

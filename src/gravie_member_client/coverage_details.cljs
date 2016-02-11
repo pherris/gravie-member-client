@@ -32,14 +32,27 @@
   (api/medical-coverage-details (-> current-state :comms :api) {:foo "bar"}))
 
 (defn years-ago [from-date]
-  (-> (t/interval (coerce/from-string from-date) (t/now))
-      (t/in-years)))
+  (let [from (coerce/from-string from-date)]
+    (if (nil? from)
+      "0"
+      (-> (t/interval from (t/now))
+        (t/in-years)))))
 
-(defn coverage-add [app-data owner]
+(defn format-date [date]
+  (if-let [d (coerce/from-string date)]
+    (format/unparse (format/formatter "MM/d/yyyy") d)
+    date))
+
+(defn coverage-add [app-state owner]
   (reify om/IRender
     (render [_]
-      (dom/div {:className "coverage-add"}
-        (dom/button {:className "btn-bigadd" :type "button"} "Add a Dependant")))))
+      (let [next-participant (count (:participants app-state))]
+        (dom/div {:className "coverage-add"}
+          (dom/button {
+                        :className "btn-bigadd"
+                        :type "button"
+                        :value {:first-name "test"}
+                        :on-click #(utils/edit-input owner [:participants :people next-participant] % :value {})} "Add a Dependant"))))))
 
 (defn coverage-participant-heading [participant owner]
   (reify om/IRender
@@ -75,7 +88,8 @@
             birth-date-error (:birth-date (:errors participant))
             gender-error (:gender (:errors participant))
             tobacco-error (:tobacco (:errors participant))
-        {:keys [:member :first-name :last-name :birth-date :gender :tobacco :errors]} participant]
+            birth-date (format-date (:birth-date participant))
+            {:keys [:member :first-name :last-name :gender :tobacco :errors :index :relationship-type]} participant]
           (dom/div {:className "panel-body pb0"}
             (dom/form {:className "form-horizontal ng-pristine ng-valid ng-valid-required ng-valid-maxlength ng-valid-invalid"}
               (dom/div {:className (dom-utils/include-error-class "form-group" [first-name-error last-name-error])}
@@ -91,7 +105,7 @@
                                            :maxLength 50
                                            :required true
                                            :value first-name
-                                           :on-change #(utils/edit-input owner [:coverage-details :participants :people :first-name :value] %)}) ;how to identify the individual person?
+                                           :on-change #(utils/edit-input owner [:participants :people index :first-name] %)}) ;how to identify the individual person?
                     (om/build dom-utils/error-div first-name-error))
                   (dom/div {:className (dom-utils/include-error-class "col-sm-6 p0 mb0" last-name-error)}
                     (dom/label {:className "sr-only" :for "lastName"} "Last Name")
@@ -103,7 +117,7 @@
                                            :maxLength 50
                                            :required true
                                            :value last-name
-                                           :on-change #(utils/edit-input owner [:coverage-details :participants :people :last-name :value] %)})
+                                           :on-change #(utils/edit-input owner [:participants :people index :last-name] %)})
                     (om/build dom-utils/error-div last-name-error))))
                 (dom/div {:className (dom-utils/include-error-class "form-group" birth-date-error)}
                   (dom/span
@@ -116,16 +130,19 @@
                                            :placeholder "mm/dd/yyyy"
                                            :maxLength 10
                                            :required true
-                                           :value birth-date
-                                           :on-change #(utils/edit-input owner [:coverage-details :participants :people :birth-date :value] %)})
+                                           :value (format-date birth-date)
+                                           :on-change #(utils/edit-input owner [:participants :people index :birth-date] %)})
                       (om/build dom-utils/error-div birth-date-error)))
-                  (dom/div {:className "d-i"}
-                    (dom/label {:className "control-label col-sm-2" :for "relationshipType"} "Relation *")
-                    (dom/div {:className "col-sm-4"}
-                      (om/build dom-utils/select-box {
+                  (if (or (= member true) (complement (nil? member)))
+                    (dom/span)
+                    (dom/div {:className "d-i"}
+                      (dom/label {:className "control-label col-sm-2" :for "relationshipType"} "Relation *")
+                      (dom/div {:className "col-sm-4"}
+                        (om/build dom-utils/select-box {
                                        :options [{ :value "?" }
-                                                 { :value "SPOUSE"}]
-                                       :value ""}))))
+                                                 { :value "SPOUSE" :display "Spouse"}]
+                                       :value relationship-type
+                                       :on-change #(utils/edit-input owner [:participants :people index :relationship-type] %)})))))
                 (dom/div {:className "form-group"}
                   (dom/div {:className (dom-utils/include-error-class "d-i" gender-error)}
                     (dom/label {:className "control-label col-sm-2" :for "gender"} "Gender *")
@@ -133,19 +150,15 @@
                       (om/build dom-utils/form-binary {
                                             :value gender
                                             :option-one {
-                                                          :className ""
                                                           :name "gender"
-                                                          :on-change nil
+                                                          :on-click #(utils/edit-input owner [:participants :people index :gender] %)
                                                           :display "Male"
-                                                          :value "MALE"
-                                                          }
+                                                          :value "MALE" }
                                             :option-two {
-                                                          :className ""
                                                           :name "gender"
-                                                          :on-change nil
+                                                          :on-click #(utils/edit-input owner [:participants :people index :gender] %)
                                                           :display "Female"
-                                                          :value "FEMALE"
-                                                          }})
+                                                          :value "FEMALE" }})
                       (om/build dom-utils/error-div gender-error)))
                   (dom/div {:className (dom-utils/include-error-class "d-i" tobacco-error)}
                     (dom/label {:className "control-label col-sm-2" :for "gender"} "Tobacco *")
@@ -153,16 +166,14 @@
                       (om/build dom-utils/form-binary {
                                             :value tobacco
                                             :option-one {
-                                                          :className ""
                                                           :name "tobacco"
-                                                          :on-change nil
+                                                          :on-click #(utils/edit-input owner [:participants :people index :tobacco] %)
                                                           :display "Yes"
                                                           :value true
                                                           }
                                             :option-two {
-                                                          :className ""
                                                           :name "tobacco"
-                                                          :on-change nil
+                                                          :on-click #(utils/edit-input owner [:participants :people index :tobacco] %)
                                                           :display "No"
                                                           :value false
                                                           }})
@@ -187,7 +198,7 @@
     om/IRender
     (render [_]
       (let [participants (:participants app-state)
-            participants-errors (dom-utils/get-error2 [:participants :errors] app-state)
+            participants-errors (dom-utils/get-error [:participants :errors] app-state)
             people-errors (get-in app-state [:errors :participants :people])
             ; note that people and their errors are combined here as well as being associated with the index they hold in the vector
             people-with-errors (map-indexed (fn [index participant]
@@ -206,8 +217,8 @@
     (render [_]
       (let [zip-code-path [:coverage-details :zip-code]
             county-path [:coverage-details :county]
-            zip-code-error (dom-utils/get-error2 zip-code-path app-state)
-            county-error (dom-utils/get-error2 county-path app-state)
+            zip-code-error (dom-utils/get-error zip-code-path app-state)
+            county-error (dom-utils/get-error county-path app-state)
             county (get-in app-state county-path)
             zip-code (get-in app-state zip-code-path)
             coverage-details (:coverage-details app-state)]
@@ -229,8 +240,7 @@
             (om/build dom-utils/form-field-required-icon "")]
            [:div.col-sm-8
             [:select.form-control.form-66 {:value (-> app-state :coverage-details :county-fips-code)
-                                           :on-change #(utils/edit-input owner [:coverage-details
-                                                                                :plan-coverage-date] %)}
+                                           :on-change #(utils/edit-input owner [:coverage-details :plan-coverage-date] %)}
                   (for [available-county (-> coverage-details :available-counties)]
                     [:option {:value (:fips-code available-county)
                               :key (:fips-code available-county)}
@@ -242,7 +252,7 @@
     om/IRender
     (render [_]
       (let [plan-coverage-date-path [:coverage-details :plan-coverage-date]
-            plan-coverage-date-error (dom-utils/get-error2 plan-coverage-date-path app-state)
+            plan-coverage-date-error (dom-utils/get-error plan-coverage-date-path app-state)
             available-plan-coverage-dates (-> app-state :coverage-details :available-plan-coverage-dates)
             display-date-format (format/formatter "M/d/yyyy")]
         (html [:div.form-horizontal
@@ -252,8 +262,7 @@
                  (om/build dom-utils/form-field-required-icon nil)]
                 [:div.col-sm-8
                  [:select.form-control.form-66 {:value (-> app-state :coverage-details :plan-coverage-date)
-                                                :on-change #(utils/edit-input owner [:coverage-details
-                                                                                     :plan-coverage-date] %)}
+                                                :on-change #(utils/edit-input owner [:coverage-details :plan-coverage-date] %)}
                   [:option {:value ""} ""]
                   (for [coverage-date available-plan-coverage-dates]
                     [:option {:value coverage-date :key coverage-date} (->> coverage-date

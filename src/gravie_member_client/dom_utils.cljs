@@ -4,10 +4,7 @@
             [sablono.core :as html :refer-macros [html]])
   (:refer-clojure :exclude [uuid]))
 
-(defn get-error [field app-state]
-  (get-in app-state [field :errors]))
-
-(defn get-error2 [path state]
+(defn get-error [path state]
   (vec (get-in state (into [:errors] path))))
 
 (defn include-error-class [current-classes error-object]
@@ -46,12 +43,13 @@
   (reify om/IRender
     (render [_]
       (let [options (:options data)
-            value (:value data)]
-        (dom/select {:name "form-container" :className "form-control form-66 angular ng-pristine ng-valid ng-touched" :value value }
+            value (:value data)
+            on-change (:on-change data)]
+        (dom/select {:name "form-container" :className "form-control form-66 angular ng-pristine ng-valid ng-touched" :value value :on-change on-change }
           (for [option options]
             (let [value (:value option)
                   display (:display option)]
-              (dom/option value display))))))))
+              (dom/option {:value value} display))))))))
 
 (defn input-text [data owner]
   (reify
@@ -81,9 +79,11 @@
           (om/build input-radio {
                                 :name "gender"
                                 :value (:value option-one)
-                                :className "ng-pristine ng-untouched ng-valid ng-valid-required" }) (:display option-one))
+                                :className "ng-pristine ng-untouched ng-valid ng-valid-required"
+                                :on-click (:on-click option-one)}) (:display option-one))
         (dom/label {:className (if (= (:value config) (:value option-two)) "active" "")}
           (om/build input-radio {
                                 :name "gender"
                                 :value (:value option-two)
-                                :className "ng-pristine ng-untouched ng-valid ng-valid-required" }) (:display option-two)))))))
+                                :className "ng-pristine ng-untouched ng-valid ng-valid-required"
+                                :on-click (:on-click option-two)}) (:display option-two)))))))
