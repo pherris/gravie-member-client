@@ -52,7 +52,7 @@
                         :className "btn-bigadd"
                         :type "button"
                         :value {:first-name "test"}
-                        :on-click #(utils/edit-input owner [:participants :people next-participant] % :value {})} "Add a Dependant"))))))
+                        :on-click #(utils/edit-input owner [:participants :people next-participant] % :value {:member false})} "Add a Dependant"))))))
 
 (defn coverage-participant-heading [participant owner]
   (reify om/IRender
@@ -133,16 +133,19 @@
                                            :value (format-date birth-date)
                                            :on-change #(utils/edit-input owner [:participants :people index :birth-date] %)})
                       (om/build dom-utils/error-div birth-date-error)))
-                  (if (or (= member true) (complement (nil? member)))
-                    (dom/span)
+                         (println "member" member)
+                  (if (= member false)
                     (dom/div {:className "d-i"}
                       (dom/label {:className "control-label col-sm-2" :for "relationshipType"} "Relation *")
                       (dom/div {:className "col-sm-4"}
                         (om/build dom-utils/select-box {
                                        :options [{ :value "?" }
-                                                 { :value "SPOUSE" :display "Spouse"}]
+                                                 { :value "SPOUSE" :display "Spouse"}
+                                                 { :value "DOMESTIC_PARTNER" :display "Domestic Partner"}
+                                                 { :value "CHILD" :display "Child"}]
                                        :value relationship-type
-                                       :on-change #(utils/edit-input owner [:participants :people index :relationship-type] %)})))))
+                                       :on-change #(utils/edit-input owner [:participants :people index :relationship-type] %)})))
+                    (dom/span)))
                 (dom/div {:className "form-group"}
                   (dom/div {:className (dom-utils/include-error-class "d-i" gender-error)}
                     (dom/label {:className "control-label col-sm-2" :for "gender"} "Gender *")
