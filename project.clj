@@ -44,7 +44,7 @@
                :min
                {:figwheel true
                 :source-paths ["src"]
-                :compiler {:output-to "resources/public/js/compiled/gravie-member-client.js"
+                :compiler {:output-to "../gravie-train/gravie-member/web-app/js/cljs/gravie-member-client.min.js"
                            :main gravie-member-client.core
                            :optimizations :advanced
                            :pretty-print false}}}}

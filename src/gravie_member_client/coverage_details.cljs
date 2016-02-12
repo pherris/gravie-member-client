@@ -11,25 +11,42 @@
             [cljs-time.core :as t]
             [cljs-time.coerce :as coerce]
             [cljs-time.format :as format]
-            [sablono.core :as html :refer-macros [html]])
+            [sablono.core :as html :refer-macros [html]]
+            [camel-snake-kebab.core :as csk]
+            [camel-snake-kebab.extras :refer [transform-keys]])
   (:require-macros [cljs.core.async.macros :as am :refer [go alt!]]
             [gravie-member-client.util :as util :refer [swallow-errors]]))
 
+(defn process-data-for-save [state]
+  (let [member (->> state
+                    :participants
+                    :people
+                    (filter :is-member)
+                    first)]
+    (println state)
+    {:member member
+     :interview {:zip-code (-> state :coverage-details :zip-code)
+                 :county-fips-code (-> state :coverage-details :county-fips-code)}
+     :plan-coverage-date (-> state :coverage-details :plan-coverage-date)
+     :participants []}))
+
 (defmethod user-action-event! :continue-clicked
   [action {destination :destination :as message} previous-state current-state history]
-  (mlog "Continue clicked")
-  (api/medical-coverage-details (-> current-state :comms :api) {:foo "bar"}))
+  (mlog "Continue6 clicked")
+  (->> current-state
+      (process-data-for-save)
+      (transform-keys csk/->camelCaseString)
+      (println "data"))
+  (api/medical-coverage-details (-> current-state :comms :api)
+                                (-> current-state
+                                    (process-data-for-save)
+                                    (->> (transform-keys csk/->camelCaseString)))))
 
 (defmethod api-event [:medical-coverage-needs :success]
   [message status data state]
   (mlog "medical-coverage-needs api event")
   (println data)
   state)
-
-(defmethod user-action-event! :continue-clicked
-  [action {destination :destination :as message} previous-state current-state history]
-  (mlog "Continue clicked")
-  (api/medical-coverage-details (-> current-state :comms :api) {:foo "bar"}))
 
 (defn years-ago [from-date]
   (-> (t/interval (coerce/from-string from-date) (t/now))
