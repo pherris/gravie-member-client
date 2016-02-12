@@ -42,23 +42,30 @@
    :gender s/Str
    :is-tobacco-user s/Bool
    :relationship-type (s/maybe s/Str)
-   :existing-interview-products [(s/maybe s/Str)]
-   :existing-product-types [(s/maybe s/Str)]
-   :is-removable s/Bool
-   :id s/Int
-   :ssn-last-four (s/maybe s/Str)
+   (s/optional-key :existing-interview-products) [(s/maybe s/Str)]
+   (s/optional-key :existing-product-types) [(s/maybe s/Str)]
+   (s/optional-key :is-removable) s/Bool
+   (s/optional-key :id) s/Int
+   (s/optional-key :ssn-last-four) (s/maybe s/Str)
    :index s/Int
-   :ssn (s/maybe s/Str)
-   :is-member s/Bool
+   (s/optional-key :ssn) (s/maybe s/Str)
+   (s/optional-key :is-member) s/Bool
    (s/optional-key :is-editing) (s/maybe s/Bool)
    (s/optional-key :errors) (s/maybe s/Str)})
+
+(defn clear-errors [owner participant]
+  "clears all errors on the participant"
+  (utils/edit-input owner [:errors :participants :people (:index participant)] nil :value {}))
 
 (defn done-editing! [owner participant errorObject]
   "Takes the results of a plumatic schema s/check and adds errors to the participant"
   (println "calling done-editing" errorObject)
   (let [errors (keys (dissoc errorObject :errors))]
+    (println errors)
     (if (nil? errors)
-      (utils/edit-input owner [:participants :people (:index participant) :is-editing] nil :value false)
+      (do
+        (utils/edit-input owner [:participants :people (:index participant) :is-editing] nil :value false) ;need to clear all errors here too
+        (clear-errors owner participant))
       (doseq [error-key errors]
         (utils/edit-input owner [:errors :participants :people (:index participant) error-key] nil :value (str "error: " error-key))))))
 
@@ -77,18 +84,19 @@
 (defn coverage-add [app-state owner]
   (reify om/IRender
     (render [_]
-      (let [next-participant (count (:participants app-state))]
+      (let [next-participant (count (get-in app-state [:participants :people]))]
+        (println "next participant is: " next-participant (get-in app-state [:participants :people]))
         (dom/div {:className "coverage-add"}
           (dom/button {
                         :className "btn-bigadd"
                         :type "button"
                         :value {:first-name "test"}
-                        :on-click #(utils/edit-input owner [:participants :people next-participant] % :value {:member false})} "Add a Dependant"))))))
+                        :on-click #(utils/edit-input owner [:participants :people next-participant] % :value {:is-member false})} "Add a Dependant"))))))
 
 (defn coverage-participant-heading [participant owner]
   (reify om/IRender
     (render [_]
-      (let [{:keys [:member :first-name :last-name :birth-date :gender :is-tobacco-user :errors]} participant]
+      (let [{:keys [:is-member :first-name :last-name :birth-date :gender :is-tobacco-user :errors]} participant]
         (dom/div
           (dom/div {:className (dom-utils/include-error-class "panel-heading clearfix" (:errors errors))}
             (dom/label {:className "panel-title checkbox active"} ;; handle toggling active
@@ -103,13 +111,13 @@
                     (dom/span birth-date)
                     (dom/span " (" (years-ago birth-date) ")"))
                   (dom/li
-                    (dom/span {:className "grey"} (if (= member true) "You!" "Other!"))))) ;;add relationship to the person object
+                    (dom/span {:className "grey"} (if (= is-member true) "You!" "Other!"))))) ;;add relationship to the person object
               (dom/div {:className "col-md-6"}
                 (dom/ul {:className "list-unstyled"}
                   (dom/li
                     (dom/span "Tobacco:" " " (str is-tobacco-user)))))))
-            (dom/div {:className (dom-utils/include-error-class "mb0" (:errors errors))}
-              (dom/div {:className "alert alert-danger error"} (:errors errors))))))))
+            (dom/div {:className (dom-utils/include-error-class "mb0" errors)}
+              (om/build-all dom-utils/component-error errors)))))))
 
 (defn coverage-participant-form [participant owner]
   (reify om/IRender
@@ -122,7 +130,7 @@
             tobacco-error (:is-tobacco-user (:errors participant))
             birth-date (format-date (:birth-date participant))
             is-editing (:is-editing participant)
-            {:keys [:member :first-name :last-name :gender :is-tobacco-user :errors :index :relationship-type]} participant]
+            {:keys [:is-member :first-name :last-name :gender :is-tobacco-user :errors :index :relationship-type]} participant]
           (dom/div {:className (str "panel-body pb0" (if (or (nil? is-editing) is-editing) "" " hide"))}
             (dom/form {:className "form-horizontal ng-pristine ng-valid ng-valid-required ng-valid-maxlength ng-valid-invalid"}
               (dom/div {:className (dom-utils/include-error-class "form-group" [first-name-error last-name-error])}
@@ -139,7 +147,7 @@
                                            :required true
                                            :value first-name
                                            :on-change #(utils/edit-input owner [:participants :people index :first-name] %)}) ;how to identify the individual person?
-                    (om/build dom-utils/error-div first-name-error))
+                    (om/build dom-utils/field-error first-name-error))
                   (dom/div {:className (dom-utils/include-error-class "col-sm-6 p0 mb0" last-name-error)}
                     (dom/label {:className "sr-only" :for "lastName"} "Last Name")
                     (om/build dom-utils/input-text {
@@ -151,7 +159,7 @@
                                            :required true
                                            :value last-name
                                            :on-change #(utils/edit-input owner [:participants :people index :last-name] %)})
-                    (om/build dom-utils/error-div last-name-error))))
+                    (om/build dom-utils/field-error last-name-error))))
                 (dom/div {:className (dom-utils/include-error-class "form-group" birth-date-error)}
                   (dom/span
                     (dom/label {:className "control-label col-sm-2 whs-nw" :for "birthDate"} "Birth Date *")
@@ -165,8 +173,8 @@
                                            :required true
                                            :value (format-date birth-date)
                                            :on-change #(utils/edit-input owner [:participants :people index :birth-date] %)})
-                      (om/build dom-utils/error-div birth-date-error)))
-                  (if (= member false)
+                      (om/build dom-utils/field-error birth-date-error)))
+                  (if (= is-member false)
                     (dom/div {:className "d-i"}
                       (dom/label {:className "control-label col-sm-2" :for "relationshipType"} "Relation *")
                       (dom/div {:className "col-sm-4"}
@@ -177,7 +185,7 @@
                                                  { :value "CHILD" :display "Child"}]
                                        :value relationship-type
                                        :on-change #(utils/edit-input owner [:participants :people index :relationship-type] %)})
-                        (om/build dom-utils/error-div relationship-type-error)))
+                        (om/build dom-utils/field-error relationship-type-error)))
                     (dom/span)))
                 (dom/div {:className "form-group"}
                   (dom/div {:className (dom-utils/include-error-class "d-i" gender-error)}
@@ -195,7 +203,7 @@
                                                           :on-click #(utils/edit-input owner [:participants :people index :gender] %)
                                                           :display "Female"
                                                           :value "FEMALE" }})
-                      (om/build dom-utils/error-div gender-error)))
+                      (om/build dom-utils/field-error gender-error)))
                   (dom/div {:className (dom-utils/include-error-class "d-i" tobacco-error)}
                     (dom/label {:className "control-label col-sm-2" :for "gender"} "Tobacco *")
                     (dom/div {:className "col-sm-4"}
@@ -213,7 +221,7 @@
                                                           :display "No"
                                                           :value false
                                                           }})
-                      (om/build dom-utils/error-div tobacco-error))))
+                      (om/build dom-utils/field-error tobacco-error))))
                 (dom/hr)
                 (dom/div {:className "row"}
                   (dom/div {:className "col-sm-12"}
@@ -244,7 +252,7 @@
                                               ;TODO combine into one assoc
                                               (let [pwe (assoc participant :errors (get people-errors index))]
                                                 (println pwe)
-                                                (assoc pwe :index index :relationship-type (if (= (:member pwe) true) "MEMBER" (:relationship-type pwe))))) (:people participants))]
+                                                (assoc pwe :index index :relationship-type (if (= (:is-member pwe) true) "MEMBER" (:relationship-type pwe))))) (:people participants))]
           (dom/div
             (dom/div {:className (dom-utils/include-error-class "" participants-errors)}
               (dom/label {:className "control-label control-label-lg"} "Tell us who needs coverage")

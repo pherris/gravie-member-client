@@ -66,9 +66,13 @@
       (dom/input (merge {
                    :type "radio"} data)))))
 
-(defn error-div [error-message owner]
+(defn field-error [error-message owner]
   (reify om/IRender (render [_]
     (dom/div {:className "error-content"} error-message))))
+
+(defn component-error [error-message owner]
+  (reify om/IRender (render [_]
+    (dom/div {:className "alert alert-danger error"} error-message))))
 
 (defn form-binary [config owner]
   (let [option-one (:option-one config)
