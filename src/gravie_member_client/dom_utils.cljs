@@ -4,10 +4,7 @@
             [sablono.core :as html :refer-macros [html]])
   (:refer-clojure :exclude [uuid]))
 
-(defn get-error [field app-state]
-  (get-in app-state [field :errors]))
-
-(defn get-error2 [path state]
+(defn get-error [path state]
   (vec (get-in state (into [:errors] path))))
 
 (defn include-error-class [current-classes error-object]
@@ -43,14 +40,16 @@
       (dom/input {:type "checkbox" :className "ng-pristine ng-untouched ng-valid" :disabled (:disabled field) :checked (:checked field)}))))
 
 (defn select-box [data owner]
-  (let [options (:options data)
-        defaultValue (:defaultValue data)]
-    (reify
-      om/IRender
-      (render [_]
-        (dom/select {:name "form-container" :className "form-control form-66 angular ng-pristine ng-valid ng-touched" :value defaultValue }
+  (reify om/IRender
+    (render [_]
+      (let [options (:options data)
+            value (:value data)
+            on-change (:on-change data)]
+        (dom/select {:name "form-container" :className "form-control form-66 angular ng-pristine ng-valid ng-touched" :value value :on-change on-change }
           (for [option options]
-            (dom/option option)))))))
+            (let [value (:value option)
+                  display (:display option)]
+              (dom/option {:value value} display))))))))
 
 (defn input-text [data owner]
   (reify
@@ -67,9 +66,13 @@
       (dom/input (merge {
                    :type "radio"} data)))))
 
-(defn error-div [error-message owner]
+(defn field-error [error-message owner]
   (reify om/IRender (render [_]
-    (dom/div {:className "error-content ng-hide"} error-message))))
+    (dom/div {:className "error-content"} error-message))))
+
+(defn component-error [error-message owner]
+  (reify om/IRender (render [_]
+    (dom/div {:className "alert alert-danger error"} error-message))))
 
 (defn form-binary [config owner]
   (let [option-one (:option-one config)
@@ -80,9 +83,11 @@
           (om/build input-radio {
                                 :name "gender"
                                 :value (:value option-one)
-                                :className "ng-pristine ng-untouched ng-valid ng-valid-required" }) (:display option-one))
+                                :className "ng-pristine ng-untouched ng-valid ng-valid-required"
+                                :on-click (:on-click option-one)}) (:display option-one))
         (dom/label {:className (if (= (:value config) (:value option-two)) "active" "")}
           (om/build input-radio {
                                 :name "gender"
                                 :value (:value option-two)
-                                :className "ng-pristine ng-untouched ng-valid ng-valid-required" }) (:display option-two)))))))
+                                :className "ng-pristine ng-untouched ng-valid ng-valid-required"
+                                :on-click (:on-click option-two)}) (:display option-two)))))))

@@ -14,10 +14,10 @@
 
 (defmethod user-action-event! :default
   [action message previous-state current-state history]
-  (println "No user-action-event! for: " action))
+  ;(println "No user-action-event! for: " action)
+  )
 
 (defmethod user-action-state :edited-input
   [action {:keys [value path]} state]
-  (mlog "Edited input")
-  (mlog "Current state of path" (get-in state path))
+  ;(mlog "Edited input" action  state)
   (assoc-in state path value))

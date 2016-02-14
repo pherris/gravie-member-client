@@ -7,15 +7,16 @@
   :min-lein-version "2.5.3"
 
   :dependencies [[org.clojure/clojure "1.7.0"]
-                 [org.clojure/clojurescript "1.7.170"]
+                 [org.clojure/clojurescript "1.7.228"]
                  [org.clojure/core.async "0.2.374"
                   :exclusions [org.clojure/tools.reader]]
                  [sablono "0.4.0"]
-                 [org.omcljs/om "0.9.0"]
+                 [org.omcljs/om "1.0.0-alpha19"]
                  [prismatic/om-tools "0.3.12"]
                  [camel-snake-kebab "0.3.2"]
                  [com.andrewmcveigh/cljs-time "0.4.0"]
-                 [cljs-ajax "0.5.1"]]
+                 [cljs-ajax "0.5.1"]
+                 [prismatic/schema "1.0.4"]]
 
   :plugins [[lein-figwheel "0.5.0-6"]
             [lein-cljsbuild "1.1.2" :exclusions [[org.clojure/clojure]]]]

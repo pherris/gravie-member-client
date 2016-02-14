@@ -61,7 +61,7 @@
 (println "jsModel:" (-> js/gravie
                         (aget "jsModel")
                         (js->clj)
-                        (->> (transform-keys csk/->kebab-case-keyword))))
+                        (->> (transform-keys csk/->kebab-case-keyword)))) 
 
 (om/root coverage-details/coverage-details app-state
          {:target (. js/document (getElementById "coverageDetails"))

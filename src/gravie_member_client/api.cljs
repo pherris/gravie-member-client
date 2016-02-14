@@ -18,3 +18,10 @@
          :keywords? true
          :params coverage-needs
          :handler #(put! channel [:medical-coverage-needs :success %])}))
+
+(defn get-counties-for-zip-code [channel zip-code]
+  (GET "/county/list"
+        {:response-format :json
+         :keywords? true
+         :params {:zipCode zip-code}
+         :handler #(put! channel [:get-counties-for-zip-code :success %])}))

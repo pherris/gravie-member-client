@@ -13,6 +13,6 @@
   event is the Synthetic React event. Pulls the value out of the event.
   Optionally takes :value as a keyword arg to override the event's value"
   [owner path event & {:keys [value]
-                       :or {value (.. event -target -value)}}]
+                       :or {value (if (nil? event) nil (.. event -target -value))}}]
   (println "Setting value for path" path "to" value)
-  (raise! owner {:action :edited-input :path path :value value}))
+  (raise! owner {:action :edited-input :path path :value (if (= "" value) nil value)}))
