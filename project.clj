@@ -16,7 +16,11 @@
                  [camel-snake-kebab "0.3.2"]
                  [com.andrewmcveigh/cljs-time "0.4.0"]
                  [cljs-ajax "0.5.1"]
-                 [prismatic/schema "1.0.4"]]
+                 [prismatic/schema "1.0.4"]
+
+                 ;; Frontend tests
+                 [com.cemerick/clojurescript.test "0.3.0"]
+                 [org.clojure/tools.reader "0.9.2"]]
 
   :plugins [[lein-figwheel "0.5.0-6"]
             [lein-cljsbuild "1.1.2" :exclusions [[org.clojure/clojure]]]]
@@ -48,7 +52,14 @@
                 :compiler {:output-to "../gravie-train/gravie-member/web-app/js/cljs/gravie-member-client.min.js"
                            :main gravie-member-client.core
                            :optimizations :advanced
-                           :pretty-print false}}}}
+                           :pretty-print false}}
+              :test
+               {:source-paths ["test-cljs" "src"]
+                  :compiler {:main gravie-member-client.core
+                             :output-to "target/gravie-member-client-debug.js"
+                             :output-dir "target/"
+                             :asset-path "base/target"
+                             :source-map-timestamp true}}}}
 
   :figwheel {;; :http-server-root "public" ;; default and assumes "resources"
              :server-port 3449 ;; default

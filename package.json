@@ -1,0 +1,12 @@
+{
+  "name": "gravie-member-client",
+  "version": "0.0.1",
+  "dependencies": {
+  },
+  "devDependencies": {
+    "karma": "0.13.9",
+    "karma-cljs-test": "^0.1.0",
+    "karma-chrome-launcher": "0.1.8",
+    "karma-firefox-launcher": "0.1"
+  }
+}

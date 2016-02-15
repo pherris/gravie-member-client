@@ -61,7 +61,7 @@
 
 (defmethod user-action-state :zip-change
   [action {zip-code :zip-code :as message} state]
-  (-> state 
+  (-> state
       (assoc-in [:coverage-details :county-fips-code] nil)
       (assoc-in [:coverage-details :available-counties] nil)))
 
@@ -78,9 +78,9 @@
   (let [counties (transform-keys csk/->kebab-case-keyword data)]
     (swap! state
            #(cond-> %
-                    true 
+                    true
                     (assoc-in [:coverage-details :available-counties] counties)
-                    
+
                     (= 1 (count counties))
                     (assoc-in [:coverage-details :county-fips-code] (-> counties first :fips-code))))))
 
@@ -109,9 +109,7 @@
 
 (defn done-editing! [owner participant errorObject]
   "Takes the results of a plumatic schema s/check and adds errors to the participant"
-  (println "calling done-editing" errorObject)
   (let [errors (keys (dissoc errorObject :errors))]
-    (println errors)
     (if (nil? errors)
       (do
         (utils/edit-input owner [:participants :people (:index participant) :is-editing] nil :value false) ;need to clear all errors here too
@@ -332,7 +330,7 @@
             [:input.form-control.form-33#zipCode {:type "text"
                                                   :value zip-code
                                                   :on-change #(do (utils/edit-input owner [:coverage-details :zip-code] %)
-                                                                  (raise! owner {:action :zip-change 
+                                                                  (raise! owner {:action :zip-change
                                                                                  :zip-code (.. % -target -value)}))
                                                   }]]]
           [:div.form-group
@@ -355,7 +353,7 @@
     om/IRender
     (render [_]
       (let [plan-coverage-date-path [:coverage-details :plan-coverage-date]
-            plan-coverage-date-error (-> app-state :errors :coverage-details :plan-coverage-date) 
+            plan-coverage-date-error (-> app-state :errors :coverage-details :plan-coverage-date)
             available-plan-coverage-dates (-> app-state :coverage-details :available-plan-coverage-dates)
             display-date-format (format/formatter "M/d/yyyy")]
         (html [:div.form-horizontal
@@ -372,6 +370,6 @@
                                                                             (coerce/from-string)
                                                                             (format/unparse display-date-format))])]
 
-                 [:span.error-content 
+                 [:span.error-content
                   plan-coverage-date-error]]]
                (om/build zip-and-county app-state)])))))

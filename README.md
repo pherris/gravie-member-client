@@ -1,6 +1,24 @@
 # gravie-member-client
 
-FIXME: Write a one-line description of your library/project.
+Spike of clojurescript implementation of the gravie member client.
+
+To test, start by building the app for test (note that we will need to sync up the builds so the regular build is not pushing into the gravie-member directory):
+
+```
+lein cljsbuild once test
+```
+
+Then run Karma - you can keep the browser open with:
+
+```
+karma start karma.dev.conf.js --auto-watch
+```
+
+or run it once with:
+```
+karma start karma.dev.conf.js --single-run
+```
+
 
 ## Overview
 
@@ -30,7 +48,7 @@ To create a production build run:
     lein do clean, cljsbuild once min
 
 And open your browser in `resources/public/index.html`. You will not
-get live reloading, nor a REPL. 
+get live reloading, nor a REPL.
 
 ## License
 
