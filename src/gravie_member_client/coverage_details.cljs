@@ -27,7 +27,6 @@
                     :people
                     (filter :is-member)
                     first)]
-    (println state)
     {:member member
      :interview {:zip-code (-> state :coverage-details :zip-code)
                  :county-fips-code (-> state :coverage-details :county-fips-code)}
@@ -39,8 +38,7 @@
   (mlog "Continue clicked")
   (->> current-state
       (process-data-for-save)
-      (transform-keys csk/->camelCaseString)
-      (println "data"))
+      (transform-keys csk/->camelCaseString))
   (api/medical-coverage-details (-> current-state :comms :api)
                                 (->> current-state
                                     (process-data-for-save)
@@ -49,15 +47,13 @@
 (defmethod api-event [:medical-coverage-needs :success]
   [message status data state]
   (mlog "medical-coverage-needs api event")
-  (println data)
   (let [data (->> data
                   (transform-keys csk/->kebab-case-keyword))]
     (swap! state
            #(-> %
                 (dissoc :errors)
                 (assoc-in [:errors :coverage-details :plan-coverage-date] (-> data :errors :plan-coverage-date))
-                #_(assoc-in [:errors :participants :people 0 :gender] (-> data :errors))))
-    (println state)))
+                #_(assoc-in [:errors :participants :people 0 :gender] (-> data :errors))))))
 
 (defmethod user-action-state :zip-change
   [action {zip-code :zip-code :as message} state]
@@ -73,7 +69,6 @@
 
 (defmethod api-event [:get-counties-for-zip-code :success]
   [message status data state]
-  (println (transform-keys csk/->kebab-case-keyword data))
   ;;todo: if there's only 1 county, pick it
   (let [counties (transform-keys csk/->kebab-case-keyword data)]
     (swap! state
@@ -133,7 +128,6 @@
   (reify om/IRender
     (render [_]
       (let [next-participant (count (get-in app-state [:participants :people]))]
-        (println "next participant is: " next-participant (get-in app-state [:participants :people]))
         (dom/div {:className "coverage-add"}
           (dom/button {
                         :className "btn-bigadd"

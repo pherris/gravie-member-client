@@ -7,6 +7,7 @@
             [gravie-member-client.coverage-details :as coverage-details]
             [gravie-member-client.footer :as footer]
             [gravie-member-client.utils :as utils :refer [mlog]]
+            [gravie-member-client.local-storage :as local-storage]
             [cljs.core.async :as async :refer [<! chan put!]]
             [clojure.string :as string]
             [camel-snake-kebab.core :as csk]
@@ -23,12 +24,15 @@
       (->> (transform-keys csk/->kebab-case-keyword))))
 
 (defonce app-state
-  (atom
-   (merge
-    {:comms {:nav (chan)
+  (let [state (or
+                (local-storage/fetch-state)
+                init-page-state)]
+    (atom
+     (merge
+       {:comms {:nav (chan)
              :api (chan)
              :user-event (chan)}}
-    init-page-state)))
+        state))))
 
 (defn api-handler
   [value state]
@@ -42,11 +46,9 @@
 (defn user-action-handler
   [{:keys [action] :as message} state history]
   (mlog "User-action-handler called with action" action " message " message)
-  (swallow-errors
    (let [previous-state @state]
-     (println "user-action-handler" previous-state)
      (swap! state (partial user-events/user-action-state action message))
-     (user-events/user-action-event! action message previous-state @state history))))
+     (user-events/user-action-event! action message previous-state @state history)))
 
 (defn ^:export setup! [state]
   (let [api-ch (-> @state :comms :api)
@@ -61,7 +63,7 @@
 (println "jsModel:" (-> js/gravie
                         (aget "jsModel")
                         (js->clj)
-                        (->> (transform-keys csk/->kebab-case-keyword)))) 
+                        (->> (transform-keys csk/->kebab-case-keyword))))
 
 (om/root coverage-details/coverage-details app-state
          {:target (. js/document (getElementById "coverageDetails"))
