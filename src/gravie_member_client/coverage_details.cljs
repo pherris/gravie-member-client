@@ -6,6 +6,7 @@
             [gravie-member-client.utils :as utils :refer [mlog]]
             [gravie-member-client.user-events :as user-events :refer [user-action-event! user-action-state]]
             [gravie-member-client.dom-utils :as dom-utils]
+            [gravie-member-client.local-storage :as local-storage]
             [cljs.core.async :as async :refer [<! chan put!]]
             [clojure.string :as string]
             [cljs-time.core :as t]
@@ -302,6 +303,26 @@
             (om/build-all coverage-participant people-with-errors)
             (om/build coverage-add app-state))))))
 
+(defn state-history [app-state owner]
+  (reify
+    om/IRender
+    (render [_]
+      (let [revisions (count (local-storage/fetch :state []))
+            revision (get-in app-state [:history :revision] 0)]
+        (html
+         [:div
+          [:hr]
+          [:div.form-group
+           [:label.control-label.col-sm-4 {:for "zipCode"}
+            [:span "History"]]
+           [:div.col-sm-8
+            [:input.form-control.form-25#history {:type "number"
+                                                  :value revision
+                                                  :max revisions
+                                                  :on-change #(do (raise! owner {:action :history-change
+                                                                                 :value (.. % -target -value)}))
+                                                  }] " of " revisions]]])))))
+
 (defn zip-and-county [app-state owner]
   (reify
     om/IRender
@@ -315,6 +336,7 @@
             coverage-details (:coverage-details app-state)]
         (html
          [:div
+          (om/build state-history app-state)
           [:hr]
           [:div.form-group
            [:label.control-label.col-sm-4 {:for "zipCode"}
@@ -367,3 +389,4 @@
                  [:span.error-content
                   plan-coverage-date-error]]]
                (om/build zip-and-county app-state)])))))
+

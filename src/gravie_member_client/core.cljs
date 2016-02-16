@@ -26,13 +26,17 @@
 (defonce app-state
   (let [state (or
                 (local-storage/fetch-state)
-                init-page-state)]
+                init-page-state)
+        state-history (local-storage/fetch :state [])]
     (atom
      (merge
        {:comms {:nav (chan)
              :api (chan)
-             :user-event (chan)}}
+             :user-event (chan)}
+        :history {:revision (count state-history)}}
         state))))
+
+(local-storage/store-state (dissoc @app-state :comms))
 
 (defn api-handler
   [value state]
@@ -64,6 +68,8 @@
                         (aget "jsModel")
                         (js->clj)
                         (->> (transform-keys csk/->kebab-case-keyword))))
+
+(println "Atom:" @app-state)
 
 (om/root coverage-details/coverage-details app-state
          {:target (. js/document (getElementById "coverageDetails"))

@@ -20,10 +20,13 @@
           (keywordify))
       default)))
 
+(defn limited-state-revisions [state]
+  (take-last 50 state))
+
 (defn store-state [state]
   "Adds the state to the localStorage states array"
   (let [states (fetch :state [])]
-    (store :state (conj states state))))
+    (store :state (limited-state-revisions (conj states state)))))
 
 (defn fetch-state [& {:keys [index] :or {index -1}}]
   "Gets whatever index you pass in (if it exists) and nil if not"
